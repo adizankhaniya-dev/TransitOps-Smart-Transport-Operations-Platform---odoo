@@ -375,10 +375,11 @@ function VehicleDetailContent({ id }: { id: string }) {
   );
 }
 
-export default function VehicleDetailPage({ params }: { params: { id: string } }) {
+export default function VehicleDetailPage({ params }: { params: React.Usable<{ id: string }> }) {
+  const { id } = React.use(params);
   return (
     <div className="flex-1 bg-zinc-50 dark:bg-zinc-950 p-6 md:p-10">
-      <VehicleDetailContent id={params.id} />
+      <VehicleDetailContent id={id} />
     </div>
   );
 }

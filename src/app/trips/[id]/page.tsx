@@ -1,3 +1,6 @@
+"use client";
+
+import * as React from "react";
 import { api } from "@/trpc/react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -321,10 +324,11 @@ function TripDetailContent({ id }: { id: string }) {
   );
 }
 
-export default function TripDetailPage({ params }: { params: { id: string } }) {
+export default function TripDetailPage({ params }: { params: React.Usable<{ id: string }> }) {
+  const { id } = React.use(params);
   return (
     <div className="flex-1 bg-zinc-50 dark:bg-zinc-950 p-6 md:p-10">
-      <TripDetailContent id={params.id} />
+      <TripDetailContent id={id} />
     </div>
   );
 }
