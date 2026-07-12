@@ -1,4 +1,4 @@
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, writeProcedure } from "../trpc";
 import { createTripSchema } from "@/lib/validations/trip";
 import {
   createTrip,
@@ -12,29 +12,29 @@ import {
 import { z } from "zod";
 
 export const tripRouter = createTRPCRouter({
-  create: publicProcedure
+  create: writeProcedure
     .input(createTripSchema)
-    .mutation(async ({ input }) => {
-      return createTrip(input);
+    .mutation(async ({ input, ctx }) => {
+      return createTrip(input, ctx.user.boardId);
     }),
 
-  getAll: publicProcedure.query(async () => {
-    return getTrips();
+  getAll: protectedProcedure.query(async ({ ctx }) => {
+    return getTrips(ctx.user.boardId);
   }),
 
-  getById: publicProcedure
+  getById: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .query(async ({ input }) => {
-      return getTrip(input.id);
+    .query(async ({ input, ctx }) => {
+      return getTrip(input.id, ctx.user.boardId);
     }),
 
-  dispatch: protectedProcedure
+  dispatch: writeProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      return dispatchTrip(input.id);
+    .mutation(async ({ input, ctx }) => {
+      return dispatchTrip(input.id, ctx.user.boardId);
     }),
 
-  complete: protectedProcedure
+  complete: writeProcedure
     .input(
       z.object({
         id: z.string(),
@@ -44,14 +44,14 @@ export const tripRouter = createTRPCRouter({
         endOdometer: z.coerce.number().positive(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { id, ...data } = input;
-      return completeTrip(id, data as CompleteTripInput);
+      return completeTrip(id, data as CompleteTripInput, ctx.user.boardId);
     }),
 
-  cancel: protectedProcedure
+  cancel: writeProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      return cancelTrip(input.id);
+    .mutation(async ({ input, ctx }) => {
+      return cancelTrip(input.id, ctx.user.boardId);
     }),
 });

@@ -1,15 +1,15 @@
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, writeProcedure } from "../trpc";
 import { listFuel, createFuel } from "@/server/services/fuel.service";
 import { fuelSchema } from "@/lib/validations/maintenance";
 
 export const fuelRouter = createTRPCRouter({
-  list: publicProcedure.query(async () => {
-    return listFuel();
+  list: protectedProcedure.query(async ({ ctx }) => {
+    return listFuel(ctx.user.boardId);
   }),
 
-  create: protectedProcedure
+  create: writeProcedure
     .input(fuelSchema)
-    .mutation(async ({ input }) => {
-      return createFuel(input);
+    .mutation(async ({ input, ctx }) => {
+      return createFuel(input, ctx.user.boardId);
     }),
 });

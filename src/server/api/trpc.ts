@@ -49,7 +49,7 @@ const isAuthed = t.middleware(async ({ next, ctx }) => {
 
   const user = await ctx.db.user.findUnique({
     where: { id: userId },
-    select: { approved: true, blocked: true },
+    select: { approved: true, blocked: true, boardId: true, permission: true },
   });
 
   if (!user) {
@@ -68,6 +68,58 @@ const isAuthed = t.middleware(async ({ next, ctx }) => {
     ctx: {
       session: ctx.session,
       db: ctx.db,
+      user: {
+        id: userId,
+        boardId: user.boardId,
+        permission: user.permission,
+      },
+    },
+  });
+});
+
+const isWriteAuthed = t.middleware(async ({ next, ctx }) => {
+  if (!ctx.session || !ctx.session.user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  const userId = (ctx.session.user as { id?: string }).id;
+  if (!userId) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  const user = await ctx.db.user.findUnique({
+    where: { id: userId },
+    select: { approved: true, blocked: true, boardId: true, permission: true },
+  });
+
+  if (!user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  if (user.blocked) {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Your access has been blocked." });
+  }
+
+  if (!user.approved) {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Your membership is pending approval." });
+  }
+
+  if (user.permission === "VIEW_ONLY") {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You have view-only access. You cannot perform write operations.",
+    });
+  }
+
+  return next({
+    ctx: {
+      session: ctx.session,
+      db: ctx.db,
+      user: {
+        id: userId,
+        boardId: user.boardId,
+        permission: user.permission,
+      },
     },
   });
 });
@@ -75,3 +127,4 @@ const isAuthed = t.middleware(async ({ next, ctx }) => {
 export const createTRPCRouter = t.router;
 export const publicProcedure = t.procedure;
 export const protectedProcedure = t.procedure.use(isAuthed);
+export const writeProcedure = t.procedure.use(isWriteAuthed);

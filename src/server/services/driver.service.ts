@@ -9,14 +9,15 @@ function isExpired(date: Date) {
   return date < new Date();
 }
 
-export async function createDriver(data: CreateDriverInput) {
+export async function createDriver(data: CreateDriverInput, boardId: string) {
   if (isExpired(data.licenseExpiry)) {
     throw new Error("License expired");
   }
 
-  const existing = await db.driver.findUnique({
+  const existing = await db.driver.findFirst({
     where: {
       licenseNumber: data.licenseNumber,
+      boardId,
     },
   });
 
@@ -27,13 +28,17 @@ export async function createDriver(data: CreateDriverInput) {
   return db.driver.create({
     data: {
       ...data,
+      boardId,
       status: DriverStatus.AVAILABLE,
     },
   });
 }
 
-export async function getDrivers() {
+export async function getDrivers(boardId: string) {
   return db.driver.findMany({
+    where: {
+      boardId,
+    },
     include: {
       trips: {
         select: {
@@ -47,15 +52,16 @@ export async function getDrivers() {
   });
 }
 
-export async function getDriverById(id: string) {
-  return db.driver.findUnique({
+export async function getDriverById(id: string, boardId: string) {
+  return db.driver.findFirst({
     where: {
       id,
+      boardId,
     },
   });
 }
 
-export async function updateDriver(id: string, data: Partial<CreateDriverInput>) {
+export async function updateDriver(id: string, data: Partial<CreateDriverInput>, boardId: string) {
   if (data.licenseExpiry && isExpired(data.licenseExpiry)) {
     throw new Error("License expired");
   }
@@ -64,6 +70,7 @@ export async function updateDriver(id: string, data: Partial<CreateDriverInput>)
     const existing = await db.driver.findFirst({
       where: {
         licenseNumber: data.licenseNumber,
+        boardId,
         NOT: {
           id,
         },
@@ -75,6 +82,12 @@ export async function updateDriver(id: string, data: Partial<CreateDriverInput>)
     }
   }
 
+  // Ensure record belongs to board first
+  const existingRecord = await getDriverById(id, boardId);
+  if (!existingRecord) {
+    throw new Error("Driver not found");
+  }
+
   return db.driver.update({
     where: {
       id,
@@ -83,10 +96,11 @@ export async function updateDriver(id: string, data: Partial<CreateDriverInput>)
   });
 }
 
-export async function deleteDriver(id: string) {
-  const driver = await db.driver.findUnique({
+export async function deleteDriver(id: string, boardId: string) {
+  const driver = await db.driver.findFirst({
     where: {
       id,
+      boardId,
     },
   });
 

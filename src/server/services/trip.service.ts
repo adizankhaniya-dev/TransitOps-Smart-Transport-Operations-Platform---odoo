@@ -11,10 +11,10 @@ const isLicenseExpired = (expiryDate: Date | string) => {
   return new Date(expiryDate) < today;
 };
 
-export async function createTrip(data: CreateTripInput) {
+export async function createTrip(data: CreateTripInput, boardId: string) {
   // Validate driver
-  const driver = await db.driver.findUnique({
-    where: { id: data.driverId },
+  const driver = await db.driver.findFirst({
+    where: { id: data.driverId, boardId },
   });
 
   if (!driver) {
@@ -30,8 +30,8 @@ export async function createTrip(data: CreateTripInput) {
   }
 
   // Validate vehicle
-  const vehicle = await db.vehicle.findUnique({
-    where: { id: data.vehicleId },
+  const vehicle = await db.vehicle.findFirst({
+    where: { id: data.vehicleId, boardId },
   });
 
   if (!vehicle) {
@@ -49,14 +49,15 @@ export async function createTrip(data: CreateTripInput) {
   return db.trip.create({
     data: {
       ...data,
+      boardId,
       status: TripStatus.DRAFT,
     },
   });
 }
 
-export async function dispatchTrip(id: string) {
-  const trip = await db.trip.findUnique({
-    where: { id },
+export async function dispatchTrip(id: string, boardId: string) {
+  const trip = await db.trip.findFirst({
+    where: { id, boardId },
     include: {
       vehicle: true,
       driver: true,
@@ -105,9 +106,9 @@ export interface CompleteTripInput {
   endOdometer: number;
 }
 
-export async function completeTrip(id: string, data: CompleteTripInput) {
-  const trip = await db.trip.findUnique({
-    where: { id },
+export async function completeTrip(id: string, data: CompleteTripInput, boardId: string) {
+  const trip = await db.trip.findFirst({
+    where: { id, boardId },
     include: {
       vehicle: true,
     },
@@ -153,6 +154,7 @@ export async function completeTrip(id: string, data: CompleteTripInput) {
 
     await tx.fuelLog.create({
       data: {
+        boardId: trip.boardId,
         vehicleId: trip.vehicleId,
         tripId: id,
         liters: data.fuelUsed,
@@ -164,9 +166,9 @@ export async function completeTrip(id: string, data: CompleteTripInput) {
   });
 }
 
-export async function cancelTrip(id: string) {
-  const trip = await db.trip.findUnique({
-    where: { id },
+export async function cancelTrip(id: string, boardId: string) {
+  const trip = await db.trip.findFirst({
+    where: { id, boardId },
   });
 
   if (!trip) {
@@ -195,8 +197,9 @@ export async function cancelTrip(id: string) {
   });
 }
 
-export async function getTrips() {
+export async function getTrips(boardId: string) {
   return db.trip.findMany({
+    where: { boardId },
     orderBy: {
       createdAt: "desc",
     },
@@ -207,9 +210,9 @@ export async function getTrips() {
   });
 }
 
-export async function getTrip(id: string) {
-  return db.trip.findUnique({
-    where: { id },
+export async function getTrip(id: string, boardId: string) {
+  return db.trip.findFirst({
+    where: { id, boardId },
     include: {
       vehicle: true,
       driver: true,

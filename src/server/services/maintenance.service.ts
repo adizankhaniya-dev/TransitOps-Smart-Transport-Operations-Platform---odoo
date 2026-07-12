@@ -5,9 +5,9 @@ import { MaintenanceStatus, VehicleStatus } from "@/lib/enums";
 
 export type CreateMaintenanceInput = z.infer<typeof maintenanceSchema>;
 
-export async function createMaintenance(data: CreateMaintenanceInput) {
-  const vehicle = await db.vehicle.findUnique({
-    where: { id: data.vehicleId },
+export async function createMaintenance(data: CreateMaintenanceInput, boardId: string) {
+  const vehicle = await db.vehicle.findFirst({
+    where: { id: data.vehicleId, boardId },
   });
 
   if (!vehicle) {
@@ -25,6 +25,7 @@ export async function createMaintenance(data: CreateMaintenanceInput) {
         description: data.description,
         cost: data.cost,
         vehicleId: data.vehicleId,
+        boardId,
         status: MaintenanceStatus.ACTIVE,
       },
     });
@@ -38,9 +39,9 @@ export async function createMaintenance(data: CreateMaintenanceInput) {
   });
 }
 
-export async function closeMaintenance(id: string) {
-  const maintenance = await db.maintenance.findUnique({
-    where: { id },
+export async function closeMaintenance(id: string, boardId: string) {
+  const maintenance = await db.maintenance.findFirst({
+    where: { id, boardId },
     include: { vehicle: true },
   });
 
@@ -74,8 +75,11 @@ export async function closeMaintenance(id: string) {
   });
 }
 
-export async function getMaintenances() {
+export async function getMaintenances(boardId: string) {
   return db.maintenance.findMany({
+    where: {
+      boardId,
+    },
     orderBy: {
       createdAt: "desc",
     },
@@ -85,9 +89,9 @@ export async function getMaintenances() {
   });
 }
 
-export async function updateMaintenance(id: string, data: Partial<Omit<CreateMaintenanceInput, "vehicleId">>) {
-  const maintenance = await db.maintenance.findUnique({
-    where: { id },
+export async function updateMaintenance(id: string, data: Partial<Omit<CreateMaintenanceInput, "vehicleId">>, boardId: string) {
+  const maintenance = await db.maintenance.findFirst({
+    where: { id, boardId },
   });
 
   if (!maintenance) {

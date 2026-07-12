@@ -5,10 +5,11 @@ import { VehicleStatus } from "@/lib/enums";
 
 export type CreateVehicleInput = z.infer<typeof createVehicleSchema>;
 
-export async function createVehicle(data: CreateVehicleInput) {
-  const existing = await db.vehicle.findUnique({
+export async function createVehicle(data: CreateVehicleInput, boardId: string) {
+  const existing = await db.vehicle.findFirst({
     where: {
       registrationNumber: data.registrationNumber,
+      boardId,
     },
   });
 
@@ -17,23 +18,30 @@ export async function createVehicle(data: CreateVehicleInput) {
   }
 
   return db.vehicle.create({
-    data,
+    data: {
+      ...data,
+      boardId,
+    },
   });
 }
 
-export async function getVehicles() {
+export async function getVehicles(boardId: string) {
   return db.vehicle.findMany({
+    where: {
+      boardId,
+    },
     orderBy: {
       createdAt: "desc",
     },
   });
 }
 
-export async function updateVehicle(id: string, data: Partial<CreateVehicleInput>) {
+export async function updateVehicle(id: string, data: Partial<CreateVehicleInput>, boardId: string) {
   if (data.registrationNumber) {
     const existing = await db.vehicle.findFirst({
       where: {
         registrationNumber: data.registrationNumber,
+        boardId,
         NOT: {
           id,
         },
@@ -45,6 +53,14 @@ export async function updateVehicle(id: string, data: Partial<CreateVehicleInput
     }
   }
 
+  // Verify belongs to board
+  const vehicle = await db.vehicle.findFirst({
+    where: { id, boardId },
+  });
+  if (!vehicle) {
+    throw new Error("Vehicle not found");
+  }
+
   return db.vehicle.update({
     where: {
       id,
@@ -53,9 +69,9 @@ export async function updateVehicle(id: string, data: Partial<CreateVehicleInput
   });
 }
 
-export async function deleteVehicle(id: string) {
-  const vehicle = await db.vehicle.findUnique({
-    where: { id },
+export async function deleteVehicle(id: string, boardId: string) {
+  const vehicle = await db.vehicle.findFirst({
+    where: { id, boardId },
   });
 
   if (!vehicle) {

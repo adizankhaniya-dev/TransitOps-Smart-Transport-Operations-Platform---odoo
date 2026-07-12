@@ -1,4 +1,4 @@
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, writeProcedure } from "../trpc";
 import { z } from "zod";
 import {
   getMaintenances,
@@ -8,19 +8,19 @@ import {
 import { maintenanceSchema } from "@/lib/validations/maintenance";
 
 export const maintenanceRouter = createTRPCRouter({
-  list: publicProcedure.query(async () => {
-    return getMaintenances();
+  list: protectedProcedure.query(async ({ ctx }) => {
+    return getMaintenances(ctx.user.boardId);
   }),
 
-  create: protectedProcedure
+  create: writeProcedure
     .input(maintenanceSchema)
-    .mutation(async ({ input }) => {
-      return createMaintenance(input);
+    .mutation(async ({ input, ctx }) => {
+      return createMaintenance(input, ctx.user.boardId);
     }),
 
-  close: protectedProcedure
+  close: writeProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      return closeMaintenance(input.id);
+    .mutation(async ({ input, ctx }) => {
+      return closeMaintenance(input.id, ctx.user.boardId);
     }),
 });

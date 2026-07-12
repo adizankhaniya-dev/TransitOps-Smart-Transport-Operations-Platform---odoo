@@ -1,4 +1,4 @@
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, writeProcedure } from "../trpc";
 import { createDriverSchema } from "@/lib/validations/driver";
 import {
   createDriver,
@@ -10,36 +10,36 @@ import {
 import { z } from "zod";
 
 export const driverRouter = createTRPCRouter({
-  create: publicProcedure
+  create: writeProcedure
     .input(createDriverSchema)
-    .mutation(async ({ input }) => {
-      return createDriver(input);
+    .mutation(async ({ input, ctx }) => {
+      return createDriver(input, ctx.user.boardId);
     }),
 
-  getAll: publicProcedure.query(async () => {
-    return getDrivers();
+  getAll: protectedProcedure.query(async ({ ctx }) => {
+    return getDrivers(ctx.user.boardId);
   }),
 
-  getById: publicProcedure
+  getById: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .query(async ({ input }) => {
-      return getDriverById(input.id);
+    .query(async ({ input, ctx }) => {
+      return getDriverById(input.id, ctx.user.boardId);
     }),
 
-  update: protectedProcedure
+  update: writeProcedure
     .input(
       z.object({
         id: z.string(),
         data: createDriverSchema,
       })
     )
-    .mutation(async ({ input }) => {
-      return updateDriver(input.id, input.data);
+    .mutation(async ({ input, ctx }) => {
+      return updateDriver(input.id, input.data, ctx.user.boardId);
     }),
 
-  delete: protectedProcedure
+  delete: writeProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      return deleteDriver(input.id);
+    .mutation(async ({ input, ctx }) => {
+      return deleteDriver(input.id, ctx.user.boardId);
     }),
 });

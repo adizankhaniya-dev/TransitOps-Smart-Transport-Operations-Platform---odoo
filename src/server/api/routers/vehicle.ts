@@ -1,25 +1,24 @@
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, writeProcedure } from "../trpc";
 import { createVehicleSchema } from "@/lib/validations/vehicle";
 import { createVehicle, getVehicles, updateVehicle, deleteVehicle } from "@/server/services/vehicle.service";
 import { z } from "zod";
-import { db } from "@/server/db";
 
 export const vehicleRouter = createTRPCRouter({
-  create: publicProcedure
+  create: writeProcedure
     .input(createVehicleSchema)
-    .mutation(async ({ input }) => {
-      return createVehicle(input);
+    .mutation(async ({ input, ctx }) => {
+      return createVehicle(input, ctx.user.boardId);
     }),
 
-  list: publicProcedure.query(async () => {
-    return getVehicles();
+  list: protectedProcedure.query(async ({ ctx }) => {
+    return getVehicles(ctx.user.boardId);
   }),
 
-  get: publicProcedure
+  get: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .query(async ({ input }) => {
-      return db.vehicle.findUnique({
-        where: { id: input.id },
+    .query(async ({ input, ctx }) => {
+      return ctx.db.vehicle.findFirst({
+        where: { id: input.id, boardId: ctx.user.boardId },
         include: {
           trips: {
             include: {
@@ -48,20 +47,20 @@ export const vehicleRouter = createTRPCRouter({
       });
     }),
 
-  update: protectedProcedure
+  update: writeProcedure
     .input(
       z.object({
         id: z.string(),
         data: createVehicleSchema,
       })
     )
-    .mutation(async ({ input }) => {
-      return updateVehicle(input.id, input.data);
+    .mutation(async ({ input, ctx }) => {
+      return updateVehicle(input.id, input.data, ctx.user.boardId);
     }),
 
-  delete: protectedProcedure
+  delete: writeProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      return deleteVehicle(input.id);
+    .mutation(async ({ input, ctx }) => {
+      return deleteVehicle(input.id, ctx.user.boardId);
     }),
 });

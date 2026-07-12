@@ -4,9 +4,9 @@ import { expenseSchema } from "@/lib/validations/maintenance";
 
 export type CreateExpenseInput = z.infer<typeof expenseSchema>;
 
-export async function createExpense(data: CreateExpenseInput) {
-  const vehicle = await db.vehicle.findUnique({
-    where: { id: data.vehicleId },
+export async function createExpense(data: CreateExpenseInput, boardId: string) {
+  const vehicle = await db.vehicle.findFirst({
+    where: { id: data.vehicleId, boardId },
   });
 
   if (!vehicle) {
@@ -14,8 +14,8 @@ export async function createExpense(data: CreateExpenseInput) {
   }
 
   if (data.tripId) {
-    const trip = await db.trip.findUnique({
-      where: { id: data.tripId },
+    const trip = await db.trip.findFirst({
+      where: { id: data.tripId, boardId },
     });
     if (!trip) {
       throw new Error("Trip not found");
@@ -29,12 +29,16 @@ export async function createExpense(data: CreateExpenseInput) {
       type: data.type,
       amount: data.amount,
       description: data.description,
+      boardId,
     },
   });
 }
 
-export async function listExpense() {
+export async function listExpense(boardId: string) {
   return db.expense.findMany({
+    where: {
+      boardId,
+    },
     orderBy: {
       date: "desc",
     },
@@ -45,10 +49,11 @@ export async function listExpense() {
   });
 }
 
-export async function vehicleExpense(vehicleId: string) {
+export async function vehicleExpense(vehicleId: string, boardId: string) {
   return db.expense.findMany({
     where: {
       vehicleId,
+      boardId,
     },
     orderBy: {
       date: "desc",
