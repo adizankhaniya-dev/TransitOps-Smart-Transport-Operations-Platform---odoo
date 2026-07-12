@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/table";
 import {
   CheckCircle2Icon, XCircleIcon, BanIcon, UserMinusIcon,
-  CopyIcon, ClockIcon, ShieldCheckIcon,
+  CopyIcon, ClockIcon, ShieldCheckIcon, EyeIcon, PencilIcon,
 } from "lucide-react";
 
 const thCl = "py-3 text-[10px] font-bold uppercase tracking-wider text-slate-500";
@@ -43,6 +43,40 @@ function StatusBadge({ approved, blocked }: { approved: boolean; blocked: boolea
   );
 }
 
+function PermissionToggle({
+  permission,
+  onToggle,
+  disabled,
+}: {
+  permission: string;
+  onToggle: () => void;
+  disabled: boolean;
+}) {
+  const isWrite = permission === "WRITE";
+  return (
+    <button
+      onClick={onToggle}
+      disabled={disabled}
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all cursor-pointer ${
+        isWrite
+          ? "bg-[#eef6f2] text-[#0d5c3a] border-emerald-200/50 hover:bg-emerald-100"
+          : "bg-slate-50 text-slate-500 border-slate-200/50 hover:bg-slate-100"
+      }`}
+      title={isWrite ? "Click to set View Only" : "Click to set Write access"}
+    >
+      {isWrite ? (
+        <>
+          <PencilIcon className="size-3" /> Write
+        </>
+      ) : (
+        <>
+          <EyeIcon className="size-3" /> View Only
+        </>
+      )}
+    </button>
+  );
+}
+
 export default function TeamManagement() {
   const utils = api.useUtils();
   const { data, isLoading } = api.team.list.useQuery();
@@ -66,6 +100,13 @@ export default function TeamManagement() {
   });
   const remove = api.team.remove.useMutation({
     onSuccess: () => { toast.success("User removed from board"); invalidate(); },
+    onError: (e) => toast.error(e.message),
+  });
+  const setPerm = api.team.setPermission.useMutation({
+    onSuccess: (_, vars) => {
+      toast.success(vars.permission === "WRITE" ? "Write access granted" : "Set to View Only");
+      invalidate();
+    },
     onError: (e) => toast.error(e.message),
   });
 
@@ -197,15 +238,15 @@ export default function TeamManagement() {
         <Table>
           <TableHeader>
             <TableRow style={{ borderBottom: "1px solid #f1f3f5" }}>
-              {["Name", "Email", "Role", "Status", "Actions"].map((h, i) => (
-                <TableHead key={h} className={`${thCl} ${i === 0 ? "pl-5" : ""} ${i === 4 ? "pr-5 text-right" : ""}`}>{h}</TableHead>
+              {["Name", "Email", "Role", "Permission", "Status", "Actions"].map((h, i) => (
+                <TableHead key={h} className={`${thCl} ${i === 0 ? "pl-5" : ""} ${i === 5 ? "pr-5 text-right" : ""}`}>{h}</TableHead>
               ))}
             </TableRow>
           </TableHeader>
           <TableBody>
             {active.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-slate-400 text-xs">
+                <TableCell colSpan={6} className="py-10 text-center text-slate-400 text-xs">
                   No approved members yet. Share your board invite code to get started.
                 </TableCell>
               </TableRow>
@@ -215,6 +256,18 @@ export default function TeamManagement() {
                   <TableCell className="py-3.5 pl-5 font-semibold text-slate-800">{m.name}</TableCell>
                   <TableCell className="py-3.5 text-slate-500 text-xs">{m.email}</TableCell>
                   <TableCell className="py-3.5 text-slate-500 text-xs">{ROLE_LABELS[m.role] ?? m.role}</TableCell>
+                  <TableCell className="py-3.5">
+                    <PermissionToggle
+                      permission={m.permission}
+                      disabled={setPerm.isPending}
+                      onToggle={() =>
+                        setPerm.mutate({
+                          id: m.id,
+                          permission: m.permission === "WRITE" ? "VIEW_ONLY" : "WRITE",
+                        })
+                      }
+                    />
+                  </TableCell>
                   <TableCell className="py-3.5">
                     <StatusBadge approved={m.approved} blocked={m.blocked} />
                   </TableCell>

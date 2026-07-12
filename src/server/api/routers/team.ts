@@ -11,6 +11,7 @@ const userSelect = {
   name: true,
   email: true,
   role: true,
+  permission: true,
   boardId: true,
   approved: true,
   blocked: true,
@@ -145,6 +146,19 @@ export const teamRouter = createTRPCRouter({
 
       return ctx.db.user.delete({
         where: { id: input.id },
+        select: userSelect,
+      });
+    }),
+
+  setPermission: protectedProcedure
+    .input(z.object({ id: z.string(), permission: z.enum(["VIEW_ONLY", "WRITE"]) }))
+    .mutation(async ({ ctx, input }) => {
+      const currentUser = await requireAdmin(ctx as Ctx);
+      await requireTargetOnBoard(ctx as Ctx, currentUser, input.id);
+
+      return ctx.db.user.update({
+        where: { id: input.id },
+        data: { permission: input.permission },
         select: userSelect,
       });
     }),

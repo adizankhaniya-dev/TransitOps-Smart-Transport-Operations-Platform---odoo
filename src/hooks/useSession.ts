@@ -7,6 +7,7 @@ export interface SessionUser {
   name: string;
   email: string;
   role: "ADMIN" | "FLEET_MANAGER" | "DISPATCHER" | "SAFETY_OFFICER" | "FINANCE";
+  permission: "VIEW_ONLY" | "WRITE";
   boardId: string;
 }
 
@@ -68,6 +69,7 @@ export function useSession() {
 
   const canWrite = (resource: string) => {
     if (!user || !approved || blocked) return false;
+    if (user.permission === "VIEW_ONLY") return false;
     return (ROLE_CAN_WRITE[user.role] ?? []).includes(resource);
   };
 

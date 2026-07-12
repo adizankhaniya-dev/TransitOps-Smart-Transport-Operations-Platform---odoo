@@ -31,11 +31,12 @@ export async function GET() {
     approved: user.approved,
     blocked: user.blocked,
     user: {
-      id:      user.id,
-      name:    user.name,
-      email:   user.email,
-      role:    user.role,
-      boardId: user.boardId,
+      id:         user.id,
+      name:       user.name,
+      email:      user.email,
+      role:       user.role,
+      permission: user.permission,
+      boardId:    user.boardId,
     },
   });
 }
