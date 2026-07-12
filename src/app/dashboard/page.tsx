@@ -31,7 +31,6 @@ import {
   ArrowRightIcon,
   LogOutIcon,
   BadgeDollarSignIcon,
-  SearchIcon,
   ChevronDownIcon,
   DownloadIcon,
   FileTextIcon,
@@ -186,7 +185,6 @@ export default function DashboardPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isFuelOpen, setIsFuelOpen] = useState(false);
   const [isExpenseOpen, setIsExpenseOpen] = useState(false);
-  const [search, setSearch] = useState("");
 
   // Notifications and Messages state
   const [notifications, setNotifications] = useState<
@@ -664,19 +662,7 @@ export default function DashboardPage() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Header */}
         <header className="h-16 border-b border-slate-200/80 bg-white flex items-center justify-between px-8 gap-4 shrink-0">
-          {/* Search bar Donezo style */}
-          <div className="relative flex-1 max-w-sm">
-            <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-[#9ca3af]" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search task"
-              className="w-full pl-10 pr-12 h-9 rounded-xl bg-[#f4f6f8] text-sm text-[#111827] outline-none border-0 focus:ring-1 focus:ring-[#0d5c3a] transition-all"
-            />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 border border-slate-200 bg-white px-1.5 py-0.5 rounded">
-              ⌘ F
-            </span>
-          </div>
+          <div className="flex-1" />
 
           {/* Controls right */}
           <div className="flex items-center gap-4">
