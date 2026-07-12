@@ -45,3 +45,17 @@ model User {
 
   createdAt DateTime @default(now())
 }
+
+model Vehicle {
+  id                 String        @id @default(cuid())
+  registrationNumber String        @unique
+  name               String
+  type               String
+  maxLoadCapacity    Float
+  odometer           Float
+  acquisitionCost    Float
+  status             VehicleStatus @default(AVAILABLE)
+
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+}
