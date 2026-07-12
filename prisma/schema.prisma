@@ -58,6 +58,8 @@ model Vehicle {
 
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
+
+  trips              Trip[]
 }
 
 model Driver {
@@ -73,4 +75,38 @@ model Driver {
 
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
+
+  trips              Trip[]
+}
+
+model Trip {
+  id                String      @id @default(cuid())
+
+  source            String
+  destination       String
+
+  cargoWeight       Float
+
+  plannedDistance   Float
+
+  actualDistance    Float?
+
+  fuelUsed          Float?
+
+  revenue           Float?
+
+  startOdometer     Float?
+
+  endOdometer       Float?
+
+  status            TripStatus @default(DRAFT)
+
+  vehicleId         String
+  vehicle           Vehicle @relation(fields:[vehicleId], references:[id])
+
+  driverId          String
+  driver            Driver @relation(fields:[driverId], references:[id])
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }

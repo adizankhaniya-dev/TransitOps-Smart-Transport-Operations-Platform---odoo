@@ -5,11 +5,13 @@ import VehicleTable from "@/components/VehicleTable";
 import VehicleForm from "@/components/VehicleForm";
 import DriverTable from "@/components/DriverTable";
 import DriverForm from "@/components/DriverForm";
+import TripTable from "@/components/TripTable";
+import TripForm from "@/components/TripForm";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { api } from "@/trpc/react";
-import { VehicleStatus, DriverStatus } from "@/lib/enums";
+import { VehicleStatus, DriverStatus, TripStatus } from "@/lib/enums";
 import {
   PlusIcon,
   TruckIcon,
@@ -18,20 +20,20 @@ import {
   NavigationIcon,
   AlertCircleIcon,
   ShieldAlertIcon,
+  PackageIcon,
+  SendIcon,
+  BanIcon,
 } from "lucide-react";
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState<"vehicles" | "drivers">("vehicles");
+  const [activeTab, setActiveTab] = useState<"vehicles" | "drivers" | "trips">("vehicles");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   // Queries for stats
-  const { data: vehicles } = api.vehicle.list.useQuery(undefined, {
-    staleTime: 5000,
-  });
-  const { data: drivers } = api.driver.getAll.useQuery(undefined, {
-    staleTime: 5000,
-  });
+  const { data: vehicles } = api.vehicle.list.useQuery(undefined, { staleTime: 5000 });
+  const { data: drivers } = api.driver.getAll.useQuery(undefined, { staleTime: 5000 });
+  const { data: trips } = api.trip.getAll.useQuery(undefined, { staleTime: 5000 });
 
   // Calculate Vehicle Stats
   const vehicleStats = {
@@ -47,6 +49,14 @@ export default function DashboardPage() {
     available: drivers?.filter((d) => d.status === DriverStatus.AVAILABLE).length ?? 0,
     onTrip: drivers?.filter((d) => d.status === DriverStatus.ON_TRIP).length ?? 0,
     suspended: drivers?.filter((d) => d.status === DriverStatus.SUSPENDED).length ?? 0,
+  };
+
+  // Calculate Trip Stats
+  const tripStats = {
+    total: trips?.length ?? 0,
+    dispatched: trips?.filter((t) => t.status === TripStatus.DISPATCHED).length ?? 0,
+    completed: trips?.filter((t) => t.status === TripStatus.COMPLETED).length ?? 0,
+    cancelled: trips?.filter((t) => t.status === TripStatus.CANCELLED).length ?? 0,
   };
 
   const handleCreateSuccess = () => {
@@ -99,6 +109,19 @@ export default function DashboardPage() {
             >
               Drivers
             </button>
+            <button
+              onClick={() => {
+                setActiveTab("trips");
+                setEditingId(null);
+              }}
+              className={`h-9 rounded-md px-4 text-xs font-semibold transition-all ${
+                activeTab === "trips"
+                  ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-50"
+                  : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
+              }`}
+            >
+              Trips
+            </button>
           </div>
 
           {/* Add Entry Action Button */}
@@ -107,15 +130,17 @@ export default function DashboardPage() {
               render={
                 <Button className="h-10 bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200 font-semibold gap-2">
                   <PlusIcon className="size-4" />
-                  {activeTab === "vehicles" ? "Add Vehicle" : "Register Driver"}
+                  {activeTab === "vehicles" ? "Add Vehicle" : activeTab === "drivers" ? "Register Driver" : "New Trip"}
                 </Button>
               }
             />
             <DialogContent className="sm:max-w-2xl">
               {activeTab === "vehicles" ? (
                 <VehicleForm onSuccess={handleCreateSuccess} />
-              ) : (
+              ) : activeTab === "drivers" ? (
                 <DriverForm onSuccess={handleCreateSuccess} />
+              ) : (
+                <TripForm onSuccess={handleCreateSuccess} />
               )}
             </DialogContent>
           </Dialog>
@@ -251,12 +276,60 @@ export default function DashboardPage() {
         )}
       </div>
 
+      {/* Trips Stats - only shown when on trips tab */}
+      {activeTab === "trips" && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Card className="border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Total Trips</CardTitle>
+              <PackageIcon className="size-4 text-zinc-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">{tripStats.total}</div>
+              <p className="text-[10px] text-zinc-400 mt-1">All time trips</p>
+            </CardContent>
+          </Card>
+          <Card className="border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Dispatched</CardTitle>
+              <SendIcon className="size-4 text-amber-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{tripStats.dispatched}</div>
+              <p className="text-[10px] text-amber-500/80 mt-1">Currently in transit</p>
+            </CardContent>
+          </Card>
+          <Card className="border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Completed</CardTitle>
+              <CheckCircle2Icon className="size-4 text-emerald-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{tripStats.completed}</div>
+              <p className="text-[10px] text-emerald-500/80 mt-1">Successfully delivered</p>
+            </CardContent>
+          </Card>
+          <Card className="border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Cancelled</CardTitle>
+              <BanIcon className="size-4 text-zinc-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-zinc-500">{tripStats.cancelled}</div>
+              <p className="text-[10px] text-zinc-400 mt-1">Trips not completed</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Main Table Content */}
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-xl p-4 md:p-6 shadow-xs">
         {activeTab === "vehicles" ? (
           <VehicleTable onEdit={(id) => setEditingId(id)} />
-        ) : (
+        ) : activeTab === "drivers" ? (
           <DriverTable onEdit={(id) => setEditingId(id)} />
+        ) : (
+          <TripTable />
         )}
       </div>
 
