@@ -1,7 +1,7 @@
 import { db } from "@/server/db";
-
 import { z } from "zod";
 import { createVehicleSchema } from "@/lib/validations/vehicle";
+import { VehicleStatus } from "@/lib/enums";
 
 export type CreateVehicleInput = z.infer<typeof createVehicleSchema>;
 
@@ -54,6 +54,18 @@ export async function updateVehicle(id: string, data: Partial<CreateVehicleInput
 }
 
 export async function deleteVehicle(id: string) {
+  const vehicle = await db.vehicle.findUnique({
+    where: { id },
+  });
+
+  if (!vehicle) {
+    throw new Error("Vehicle not found");
+  }
+
+  if (vehicle.status === VehicleStatus.ON_TRIP) {
+    throw new Error("Vehicles currently on a trip cannot be deleted");
+  }
+
   return db.vehicle.delete({
     where: {
       id,

@@ -42,37 +42,44 @@ import {
   SearchIcon,
   SearchXIcon,
 } from "lucide-react";
-import { VehicleStatus } from "@/lib/enums";
+import { DriverStatus } from "@/lib/enums";
 import { toast } from "sonner";
 
 const statusStyles = {
-  [VehicleStatus.AVAILABLE]: "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20",
-  [VehicleStatus.ON_TRIP]: "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20",
-  [VehicleStatus.IN_SHOP]: "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20",
-  [VehicleStatus.RETIRED]: "bg-zinc-50 text-zinc-700 border border-zinc-200 dark:bg-zinc-500/10 dark:text-zinc-400 dark:border-zinc-500/20",
+  [DriverStatus.AVAILABLE]: "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20",
+  [DriverStatus.ON_TRIP]: "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20",
+  [DriverStatus.OFF_DUTY]: "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20",
+  [DriverStatus.SUSPENDED]: "bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20",
 };
 
-interface VehicleTableProps {
+const isLicenseExpired = (expiryDate: Date | string) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return new Date(expiryDate) < today;
+};
+
+
+interface DriverTableProps {
   onEdit?: (id: string) => void;
 }
 
-export default function VehicleTable({ onEdit }: VehicleTableProps = {}) {
+export default function DriverTable({ onEdit }: DriverTableProps = {}) {
   const utils = api.useUtils();
-  const { data: vehicles, isLoading } = api.vehicle.list.useQuery();
+  const { data: drivers, isLoading } = api.driver.getAll.useQuery();
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
-  const [typeFilter, setTypeFilter] = useState<string>("ALL");
+  const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const deleteMutation = api.vehicle.delete.useMutation({
+  const deleteMutation = api.driver.delete.useMutation({
     onSuccess: () => {
-      toast.success("Vehicle deleted successfully");
-      utils.vehicle.list.invalidate();
+      toast.success("Driver deleted successfully");
+      utils.driver.getAll.invalidate();
       setDeletingId(null);
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to delete vehicle");
+      toast.error(error.message || "Failed to delete driver");
     },
   });
 
@@ -82,25 +89,26 @@ export default function VehicleTable({ onEdit }: VehicleTableProps = {}) {
     }
   };
 
-  const uniqueTypes = useMemo(() => {
-    if (!vehicles) return [];
-    const types = vehicles.map((v) => v.type);
-    return Array.from(new Set(types)).filter(Boolean);
-  }, [vehicles]);
+  const uniqueCategories = useMemo(() => {
+    if (!drivers) return [];
+    const categories = drivers.map((d) => d.licenseCategory);
+    return Array.from(new Set(categories)).filter(Boolean);
+  }, [drivers]);
 
-  const filteredVehicles = useMemo(() => {
-    if (!vehicles) return [];
-    return vehicles.filter((vehicle) => {
+  const filteredDrivers = useMemo(() => {
+    if (!drivers) return [];
+    return drivers.filter((driver) => {
       const matchesSearch =
-        vehicle.registrationNumber.toLowerCase().includes(search.toLowerCase()) ||
-        vehicle.name.toLowerCase().includes(search.toLowerCase());
+        driver.name.toLowerCase().includes(search.toLowerCase()) ||
+        driver.licenseNumber.toLowerCase().includes(search.toLowerCase());
       const matchesStatus =
-        statusFilter === "ALL" || vehicle.status === statusFilter;
-      const matchesType =
-        typeFilter === "ALL" || vehicle.type.toLowerCase() === typeFilter.toLowerCase();
-      return matchesSearch && matchesStatus && matchesType;
+        statusFilter === "ALL" || driver.status === statusFilter;
+      const matchesCategory =
+        categoryFilter === "ALL" ||
+        driver.licenseCategory.toLowerCase() === categoryFilter.toLowerCase();
+      return matchesSearch && matchesStatus && matchesCategory;
     });
-  }, [vehicles, search, statusFilter, typeFilter]);
+  }, [drivers, search, statusFilter, categoryFilter]);
 
   // Loading skeleton state
   if (isLoading) {
@@ -152,23 +160,23 @@ export default function VehicleTable({ onEdit }: VehicleTableProps = {}) {
         <div className="relative flex-1">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400" />
           <Input
-            placeholder="Search by registration or name..."
+            placeholder="Search by name or license number..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 h-10 border-zinc-200 dark:border-zinc-800"
           />
         </div>
-        <Select value={typeFilter} onValueChange={(val) => setTypeFilter(val ?? "ALL")}>
+        <Select value={categoryFilter} onValueChange={(val) => setCategoryFilter(val ?? "ALL")}>
           <SelectTrigger className="w-full sm:w-44 h-10 border-zinc-200 dark:border-zinc-800">
-            <SelectValue placeholder="Type: All">
-              {typeFilter === "ALL" ? "Type: All" : typeFilter}
+            <SelectValue placeholder="Category: All">
+              {categoryFilter === "ALL" ? "Category: All" : categoryFilter}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="ALL">Type: All</SelectItem>
-            {uniqueTypes.map((type) => (
-              <SelectItem key={type} value={type}>
-                {type}
+            <SelectItem value="ALL">Category: All</SelectItem>
+            {uniqueCategories.map((cat) => (
+              <SelectItem key={cat} value={cat}>
+                {cat}
               </SelectItem>
             ))}
           </SelectContent>
@@ -181,7 +189,7 @@ export default function VehicleTable({ onEdit }: VehicleTableProps = {}) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">Status: All</SelectItem>
-            {Object.values(VehicleStatus).map((status) => (
+            {Object.values(DriverStatus).map((status) => (
               <SelectItem key={status} value={status}>
                 {status.replace("_", " ")}
               </SelectItem>
@@ -191,12 +199,12 @@ export default function VehicleTable({ onEdit }: VehicleTableProps = {}) {
       </div>
 
       {/* Table / Empty States */}
-      {filteredVehicles.length === 0 ? (
+      {filteredDrivers.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg bg-zinc-50/20 dark:bg-zinc-950/20">
           <SearchXIcon className="size-8 text-zinc-400 mb-3" />
-          <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">No vehicles found</h3>
+          <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">No drivers found</h3>
           <p className="text-sm text-zinc-500 mt-1">
-            Try adjusting your search query or status filter.
+            Try adjusting your search query or filters.
           </p>
         </div>
       ) : (
@@ -205,19 +213,19 @@ export default function VehicleTable({ onEdit }: VehicleTableProps = {}) {
             <TableHeader>
               <TableRow className="bg-zinc-50/50 dark:bg-zinc-950/20">
                 <TableHead className="font-semibold text-zinc-700 dark:text-zinc-300 py-3 pl-4">
-                  Registration
+                  Name
                 </TableHead>
                 <TableHead className="font-semibold text-zinc-700 dark:text-zinc-300 py-3">
-                  Vehicle
+                  License Number
                 </TableHead>
                 <TableHead className="font-semibold text-zinc-700 dark:text-zinc-300 py-3">
-                  Type
+                  Category
                 </TableHead>
                 <TableHead className="font-semibold text-zinc-700 dark:text-zinc-300 py-3">
-                  Capacity
+                  Expiry Date
                 </TableHead>
                 <TableHead className="font-semibold text-zinc-700 dark:text-zinc-300 py-3">
-                  Odometer
+                  Safety Score
                 </TableHead>
                 <TableHead className="font-semibold text-zinc-700 dark:text-zinc-300 py-3">
                   Status
@@ -228,33 +236,51 @@ export default function VehicleTable({ onEdit }: VehicleTableProps = {}) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredVehicles.map((vehicle) => (
+              {filteredDrivers.map((driver) => (
                 <TableRow
-                  key={vehicle.id}
+                  key={driver.id}
                   className="border-b border-zinc-100 dark:border-zinc-800 last:border-0 hover:bg-zinc-50/30 dark:hover:bg-zinc-800/10"
                 >
                   <TableCell className="font-medium text-zinc-900 dark:text-zinc-100 py-3.5 pl-4">
-                    {vehicle.registrationNumber}
+                    {driver.name}
                   </TableCell>
                   <TableCell className="text-zinc-600 dark:text-zinc-400 py-3.5">
-                    {vehicle.name}
+                    {driver.licenseNumber}
                   </TableCell>
                   <TableCell className="text-zinc-600 dark:text-zinc-400 py-3.5">
-                    {vehicle.type}
+                    {driver.licenseCategory}
                   </TableCell>
-                  <TableCell className="text-zinc-600 dark:text-zinc-400 py-3.5">
-                    {vehicle.maxLoadCapacity.toLocaleString()} kg
+                  <TableCell className="py-3.5">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-zinc-700 dark:text-zinc-300 font-medium">
+                        {new Date(driver.licenseExpiry).toLocaleDateString()}
+                      </span>
+                      {isLicenseExpired(driver.licenseExpiry) ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-600 dark:text-rose-400">
+                          <span>🔴</span> Expired
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                          <span>🟢</span> Valid
+                        </span>
+                      )}
+                    </div>
                   </TableCell>
-                  <TableCell className="text-zinc-600 dark:text-zinc-400 py-3.5">
-                    {vehicle.odometer.toLocaleString()} km
+                  <TableCell className="py-3.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                        {driver.safetyScore}
+                      </span>
+                      <span className="text-xs text-zinc-400">/ 100</span>
+                    </div>
                   </TableCell>
                   <TableCell className="py-3.5">
                     <Badge
                       className={`${
-                        statusStyles[vehicle.status as VehicleStatus]
+                        statusStyles[driver.status as DriverStatus]
                       } px-2 py-0.5 rounded-full`}
                     >
-                      {vehicle.status.replace("_", " ")}
+                      {driver.status.replace("_", " ")}
                     </Badge>
                   </TableCell>
                   <TableCell className="py-3.5 pr-4 text-right">
@@ -265,15 +291,15 @@ export default function VehicleTable({ onEdit }: VehicleTableProps = {}) {
                       <DropdownMenuContent align="end" className="w-36">
                         <DropdownMenuItem
                           className="gap-2 cursor-pointer"
-                          onClick={() => onEdit && onEdit(vehicle.id)}
+                          onClick={() => onEdit && onEdit(driver.id)}
                         >
                           <EditIcon className="size-3.5 text-zinc-500" />
                           <span>Edit details</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer data-disabled:pointer-events-none data-disabled:opacity-50"
-                          disabled={vehicle.status === VehicleStatus.ON_TRIP}
-                          onClick={() => setDeletingId(vehicle.id)}
+                          disabled={driver.status === DriverStatus.ON_TRIP}
+                          onClick={() => setDeletingId(driver.id)}
                         >
                           <TrashIcon className="size-3.5" />
                           <span>Delete</span>
@@ -295,9 +321,9 @@ export default function VehicleTable({ onEdit }: VehicleTableProps = {}) {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Vehicle</DialogTitle>
+            <DialogTitle>Delete Driver</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this vehicle? This action cannot be
+              Are you sure you want to delete this driver? This action cannot be
               undone.
             </DialogDescription>
           </DialogHeader>
