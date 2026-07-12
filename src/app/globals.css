@@ -52,65 +52,118 @@
    NEEBEE LIGHT THEME (exact tokens)
 ════════════════════════════════════ */
 :root {
-  /* Backgrounds — warm off-white (exact Neebee light palette) */
-  --bg-outer:   #e9e6e1;
-  --bg-card:    #f9f7f4;
-  --bg-elevated:#f0ede8;
+  /* Backing wallpaper — none, standard clean light background */
+  --bg-wallpaper: none;
+  --bg-outer:   #f4f6f8;
+  --bg-card:    #ffffff;
+  --bg-elevated:#f8f9fa;
 
   /* Borders */
-  --border-soft:   rgba(0,0,0,0.07);
-  --border-medium: rgba(0,0,0,0.13);
-  --border-strong: rgba(0,0,0,0.22);
+  --border-soft:   rgba(0,0,0,0.04);
+  --border-medium: rgba(0,0,0,0.08);
+  --border-strong: rgba(0,0,0,0.12);
 
   /* Text */
-  --text-primary: #111111;
-  --text-muted:   #666666;
-  --text-dim:     #aaaaaa;
+  --text-primary: #111827;
+  --text-muted:   #4b5563;
+  --text-dim:     #9ca3af;
 
   /* Inputs */
-  --input-surface: #faf8f5;
-  --input-border:  rgba(0,0,0,0.09);
+  --input-surface: #ffffff;
+  --input-border:  rgba(0,0,0,0.12);
 
-  /* Accent — orange brand */
-  --brand:      #e07000;
-  --brand-hov:  #c96300;
-  --brand-soft: rgba(224,112,0,0.1);
-  --brand-muted:rgba(224,112,0,0.06);
+  /* Accent — Forest Green Brand */
+  --brand:      #0d5c3a;
+  --brand-hov:  #064e3b;
+  --brand-soft: rgba(13,92,58,0.1);
+  --brand-muted:rgba(13,92,58,0.05);
+  --brand-teal: #10b981;
 
-  /* Shadcn compat tokens — mapped to warm light */
-  --background:           #e9e6e1;
-  --foreground:           #111111;
-  --card:                 #f9f7f4;
-  --card-foreground:      #111111;
-  --popover:              #f9f7f4;
-  --popover-foreground:   #111111;
-  --primary:              #111111;
-  --primary-foreground:   #f9f7f4;
-  --secondary:            #f0ede8;
-  --secondary-foreground: #111111;
-  --muted:                #f0ede8;
-  --muted-foreground:     #666666;
-  --accent:               #f0ede8;
-  --accent-foreground:    #111111;
+  /* Shadcn compat tokens */
+  --background:           #f4f6f8;
+  --foreground:           #111827;
+  --card:                 #ffffff;
+  --card-foreground:      #111827;
+  --popover:              #ffffff;
+  --popover-foreground:   #111827;
+  --primary:              #0d5c3a;
+  --primary-foreground:   #ffffff;
+  --secondary:            #f8f9fa;
+  --secondary-foreground: #111827;
+  --muted:                #f8f9fa;
+  --muted-foreground:     #4b5563;
+  --accent:               #f8f9fa;
+  --accent-foreground:    #111827;
   --destructive:          oklch(0.577 0.245 27.325);
-  --border:               rgba(0,0,0,0.1);
-  --input:                rgba(0,0,0,0.08);
-  --ring:                 rgba(0,0,0,0.2);
+  --border:               rgba(0,0,0,0.08);
+  --input:                rgba(0,0,0,0.06);
+  --ring:                 rgba(13,92,58,0.2);
   --radius:               0.75rem;
 
-  --sidebar:                  #f0ede8;
-  --sidebar-foreground:       #111111;
-  --sidebar-primary:          #111111;
-  --sidebar-primary-foreground: #f9f7f4;
-  --sidebar-accent:           #e9e6e1;
-  --sidebar-accent-foreground:#111111;
-  --sidebar-border:           rgba(0,0,0,0.1);
-  --sidebar-ring:             rgba(0,0,0,0.2);
-  --chart-1: #e07000;
-  --chart-2: #555555;
-  --chart-3: #888888;
-  --chart-4: #aaaaaa;
-  --chart-5: #cccccc;
+  --sidebar:                  #ffffff;
+  --sidebar-foreground:       #111827;
+  --sidebar-primary:          #0d5c3a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent:           #f4f6f8;
+  --sidebar-accent-foreground:#111827;
+  --sidebar-border:           rgba(0,0,0,0.08);
+  --sidebar-ring:             rgba(13,92,58,0.2);
+  --chart-1: #0d5c3a;
+  --chart-2: #10b981;
+  --chart-3: #84cc16;
+  --chart-4: #0284c7;
+  --chart-5: #cbd5e1;
+}
+
+.dark {
+  /* Retain light green/off-white theme so it feels consistent with picture design */
+  --bg-wallpaper: none;
+  --bg-outer:   #f4f6f8;
+  --bg-card:    #ffffff;
+  --bg-elevated:#f8f9fa;
+  --border-soft:   rgba(0,0,0,0.04);
+  --border-medium: rgba(0,0,0,0.08);
+  --border-strong: rgba(0,0,0,0.12);
+  --text-primary: #111827;
+  --text-muted:   #4b5563;
+  --text-dim:     #9ca3af;
+  --input-surface: #ffffff;
+  --input-border:  rgba(0,0,0,0.12);
+  --brand:      #0d5c3a;
+  --brand-hov:  #064e3b;
+  --brand-soft: rgba(13,92,58,0.1);
+  --brand-muted:rgba(13,92,58,0.05);
+  --brand-teal: #10b981;
+  --background:           #f4f6f8;
+  --foreground:           #111827;
+  --card:                 #ffffff;
+  --card-foreground:      #111827;
+  --popover:              #ffffff;
+  --popover-foreground:   #111827;
+  --primary:              #0d5c3a;
+  --primary-foreground:   #ffffff;
+  --secondary:            #f8f9fa;
+  --secondary-foreground: #111827;
+  --muted:                #f8f9fa;
+  --muted-foreground:     #4b5563;
+  --accent:               #f8f9fa;
+  --accent-foreground:    #111827;
+  --border:               rgba(0,0,0,0.08);
+  --input:                rgba(0,0,0,0.06);
+  --ring:                 rgba(13,92,58,0.2);
+  --sidebar:                  #ffffff;
+  --sidebar-foreground:       #111827;
+  --sidebar-primary:          #0d5c3a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent:           #f4f6f8;
+  --sidebar-accent-foreground:#111827;
+  --sidebar-border:           rgba(0,0,0,0.08);
+  --sidebar-ring:             rgba(13,92,58,0.2);
+  --chart-1: #0d5c3a;
+  --chart-2: #10b981;
+  --chart-3: #84cc16;
+  --chart-4: #0284c7;
+  --chart-5: #cbd5e1;
 }
 
 /* ═══════════════════════════════════

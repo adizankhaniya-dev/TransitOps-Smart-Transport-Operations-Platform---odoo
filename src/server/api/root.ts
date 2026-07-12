@@ -5,6 +5,7 @@ import { tripRouter } from "./routers/trip";
 import { maintenanceRouter } from "./routers/maintenance";
 import { fuelRouter } from "./routers/fuel";
 import { expenseRouter } from "./routers/expense";
+import { teamRouter } from "./routers/team";
 
 export const appRouter = createTRPCRouter({
   vehicle: vehicleRouter,
@@ -13,6 +14,7 @@ export const appRouter = createTRPCRouter({
   maintenance: maintenanceRouter,
   fuel: fuelRouter,
   expense: expenseRouter,
+  team: teamRouter,
 });
 
 export type AppRouter = typeof appRouter;

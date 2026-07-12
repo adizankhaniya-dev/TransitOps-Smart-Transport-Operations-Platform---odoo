@@ -5,6 +5,9 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Clean existing database records
+  await prisma.maintenance.deleteMany({});
+  await prisma.fuelLog.deleteMany({});
+  await prisma.expense.deleteMany({});
   await prisma.trip.deleteMany({});
   await prisma.user.deleteMany({});
   await prisma.vehicle.deleteMany({});
@@ -20,6 +23,15 @@ async function main() {
       role: "ADMIN",
     },
   });
+
+  // Demo RBAC users
+  const mkHash = (p: string) => bcrypt.hash(p, 10);
+  await Promise.all([
+    prisma.user.create({ data: { name: "Raven K.", email: "raven@transitops.in", password: await mkHash("fleet123"), role: "FLEET_MANAGER" } }),
+    prisma.user.create({ data: { name: "Alex T.",  email: "alex@transitops.in",  password: await mkHash("disp123"),  role: "DISPATCHER" } }),
+    prisma.user.create({ data: { name: "Priya M.", email: "priya@transitops.in", password: await mkHash("safe123"),  role: "SAFETY_OFFICER" } }),
+    prisma.user.create({ data: { name: "John F.",  email: "john@transitops.in",  password: await mkHash("fin123"),   role: "FINANCE" } }),
+  ]);
 
   // Seed 5 Vehicles
   const vehicles = await Promise.all([
