@@ -68,6 +68,7 @@ model Trip {
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
   fuelLogs        FuelLog[]
+  expenses        Expense[]
   driver          Driver     @relation(fields: [driverId], references: [id])
   vehicle         Vehicle    @relation(fields: [vehicleId], references: [id])
 }
@@ -103,6 +104,8 @@ model Expense {
   description String?
   date        DateTime    @default(now())
   vehicleId   String
+  tripId      String?
+  trip        Trip?       @relation(fields: [tripId], references: [id])
   vehicle     Vehicle     @relation(fields: [vehicleId], references: [id])
 }
 

@@ -193,6 +193,8 @@ export default function TripTable() {
     onSuccess: (data, variables) => {
       toast.success("Trip completed successfully");
       utils.trip.getAll.invalidate();
+      utils.fuel.list.invalidate().catch(() => {});
+      utils.expense.list.invalidate().catch(() => {});
       setCompletingId(null);
       const trip = trips?.find(t => t.id === variables.id);
       if (trip) {

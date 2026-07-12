@@ -13,9 +13,19 @@ export async function createExpense(data: CreateExpenseInput) {
     throw new Error("Vehicle not found");
   }
 
+  if (data.tripId) {
+    const trip = await db.trip.findUnique({
+      where: { id: data.tripId },
+    });
+    if (!trip) {
+      throw new Error("Trip not found");
+    }
+  }
+
   return db.expense.create({
     data: {
       vehicleId: data.vehicleId,
+      tripId: data.tripId,
       type: data.type,
       amount: data.amount,
       description: data.description,
@@ -30,6 +40,7 @@ export async function listExpense() {
     },
     include: {
       vehicle: true,
+      trip: true,
     },
   });
 }

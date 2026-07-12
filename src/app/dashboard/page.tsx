@@ -364,6 +364,7 @@ export default function DashboardPage() {
     onSuccess: () => {
       toast.success("Fuel logged");
       rfF();
+      rfT();
       setIsFuelOpen(false);
       setFF({ vehicleId: "", tripId: "", liters: "", cost: "" });
     },
@@ -373,6 +374,7 @@ export default function DashboardPage() {
     onSuccess: () => {
       toast.success("Expense added");
       rfE();
+      rfT();
       setIsExpenseOpen(false);
       setEF({ tripId: "", vehicleId: "", type: "TOLL", amount: "", description: "" });
     },
@@ -452,7 +454,11 @@ export default function DashboardPage() {
     () => maintenances?.reduce((a, m) => a + m.cost, 0) ?? 0,
     [maintenances],
   );
-  const totalOp = totalFuel + totalMaint;
+  const totalExpenses = useMemo(
+    () => expenses?.reduce((a, e) => a + e.amount, 0) ?? 0,
+    [expenses],
+  );
+  const totalOp = totalFuel + totalMaint + totalExpenses;
   const totalRev = useMemo(
     () => trips?.reduce((a, t) => a + (t.revenue ?? 0), 0) ?? 0,
     [trips],
@@ -1726,6 +1732,7 @@ export default function DashboardPage() {
                               onClick={() =>
                                 cExp.mutate({
                                   vehicleId: EF.vehicleId,
+                                  tripId: EF.tripId || null,
                                   type: EF.type,
                                   amount: Number(EF.amount),
                                   description: EF.description || null,
@@ -1850,6 +1857,7 @@ export default function DashboardPage() {
 
                         // Get expenses logged during this trip
                         const tripExpenses = expenses?.filter(e => {
+                          if (e.tripId) return e.tripId === trip.id;
                           const eDate = new Date(e.date);
                           return e.vehicleId === trip.vehicleId && eDate >= tripStart && eDate <= tripEnd;
                         }) ?? [];
@@ -1943,7 +1951,7 @@ export default function DashboardPage() {
                 {/* Thick separator and total operational cost bar */}
                 <div className="border-t-4 border-slate-200/80 px-5 py-4 bg-slate-50/20 flex justify-between items-center rounded-b-2xl">
                   <span className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-                    Total Operational Cost (Auto) = Fuel + Maint
+                    Total Operational Cost (Auto) = Fuel + Maint + Expenses
                   </span>
                   <span className="text-lg font-extrabold text-[#d97706]" style={{ fontFamily: "var(--font-space-grotesk)" }}>
                     ₹ {totalOp.toLocaleString()}

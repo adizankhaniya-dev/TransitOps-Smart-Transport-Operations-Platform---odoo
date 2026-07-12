@@ -16,6 +16,7 @@ export const fuelSchema = z.object({
 
 export const expenseSchema = z.object({
   vehicleId: z.string().min(1, "Vehicle ID is required"),
+  tripId: z.string().optional().nullable(),
   type: z.enum(["TOLL", "REPAIR", "INSURANCE", "OTHER"]),
   amount: z.coerce.number().positive("Amount must be positive"),
   description: z.string().optional().nullable(),
