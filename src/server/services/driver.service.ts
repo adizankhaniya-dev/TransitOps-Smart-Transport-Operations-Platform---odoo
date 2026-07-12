@@ -14,15 +14,14 @@ export async function createDriver(data: CreateDriverInput, boardId: string) {
     throw new Error("License expired");
   }
 
-  const existing = await db.driver.findFirst({
+  const existing = await db.driver.findUnique({
     where: {
       licenseNumber: data.licenseNumber,
-      boardId,
     },
   });
 
   if (existing) {
-    throw new Error("License already exists");
+    throw new Error("License number already exists in the system.");
   }
 
   return db.driver.create({
@@ -67,18 +66,14 @@ export async function updateDriver(id: string, data: Partial<CreateDriverInput>,
   }
 
   if (data.licenseNumber) {
-    const existing = await db.driver.findFirst({
+    const existing = await db.driver.findUnique({
       where: {
         licenseNumber: data.licenseNumber,
-        boardId,
-        NOT: {
-          id,
-        },
       },
     });
 
-    if (existing) {
-      throw new Error("License already exists");
+    if (existing && existing.id !== id) {
+      throw new Error("License number already exists in the system.");
     }
   }
 

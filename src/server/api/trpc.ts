@@ -35,7 +35,32 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   };
 };
 
-const t = initTRPC.context<typeof createTRPCContext>().create();
+const t = initTRPC.context<typeof createTRPCContext>().create({
+  errorFormatter({ shape, error }) {
+    let message = error.message;
+
+    // Check if the error message contains Prisma details
+    if (
+      message.includes("PrismaClient") ||
+      message.includes("prisma") ||
+      message.includes("Unique constraint failed") ||
+      message.includes("invocation:")
+    ) {
+      if (message.includes("registrationNumber")) {
+        message = "Registration number already exists in the system.";
+      } else if (message.includes("licenseNumber")) {
+        message = "License number already exists in the system.";
+      } else {
+        message = "An error occurred while saving data. Please check your inputs.";
+      }
+    }
+
+    return {
+      ...shape,
+      message,
+    };
+  },
+});
 
 const isAuthed = t.middleware(async ({ next, ctx }) => {
   if (!ctx.session || !ctx.session.user) {

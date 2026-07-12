@@ -6,15 +6,14 @@ import { VehicleStatus } from "@/lib/enums";
 export type CreateVehicleInput = z.infer<typeof createVehicleSchema>;
 
 export async function createVehicle(data: CreateVehicleInput, boardId: string) {
-  const existing = await db.vehicle.findFirst({
+  const existing = await db.vehicle.findUnique({
     where: {
       registrationNumber: data.registrationNumber,
-      boardId,
     },
   });
 
   if (existing) {
-    throw new Error("Registration number already exists");
+    throw new Error("Registration number already exists in the system.");
   }
 
   return db.vehicle.create({
@@ -38,18 +37,14 @@ export async function getVehicles(boardId: string) {
 
 export async function updateVehicle(id: string, data: Partial<CreateVehicleInput>, boardId: string) {
   if (data.registrationNumber) {
-    const existing = await db.vehicle.findFirst({
+    const existing = await db.vehicle.findUnique({
       where: {
         registrationNumber: data.registrationNumber,
-        boardId,
-        NOT: {
-          id,
-        },
       },
     });
 
-    if (existing) {
-      throw new Error("Registration number already exists");
+    if (existing && existing.id !== id) {
+      throw new Error("Registration number already exists in the system.");
     }
   }
 
