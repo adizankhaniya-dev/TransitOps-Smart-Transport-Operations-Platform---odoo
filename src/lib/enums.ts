@@ -26,3 +26,8 @@ export enum UserRole {
   SAFETY_OFFICER = "SAFETY_OFFICER",
   FINANCE = "FINANCE",
 }
+
+export enum MaintenanceStatus {
+  ACTIVE = "ACTIVE",
+  CLOSED = "CLOSED",
+}

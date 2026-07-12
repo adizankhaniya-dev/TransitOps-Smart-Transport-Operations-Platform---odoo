@@ -20,6 +20,31 @@ export const vehicleRouter = createTRPCRouter({
     .query(async ({ input }) => {
       return db.vehicle.findUnique({
         where: { id: input.id },
+        include: {
+          trips: {
+            include: {
+              driver: true,
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+          },
+          maintenances: {
+            orderBy: {
+              openedAt: "desc",
+            },
+          },
+          fuelLogs: {
+            orderBy: {
+              date: "desc",
+            },
+          },
+          expenses: {
+            orderBy: {
+              date: "desc",
+            },
+          },
+        },
       });
     }),
 

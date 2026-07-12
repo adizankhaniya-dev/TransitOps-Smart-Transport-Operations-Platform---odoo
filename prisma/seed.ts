@@ -249,7 +249,49 @@ async function main() {
     },
   });
 
-  console.log("✅ Database seeded with users, vehicles, drivers, and 6 trips.");
+  // Seed Maintenance records
+  await prisma.maintenance.createMany({
+    data: [
+      {
+        title: "Annual Safety Check",
+        description: "Brake alignment, engine tuning and oil change",
+        cost: 3500,
+        status: "ACTIVE",
+        vehicleId: vehicles[0].id,
+      },
+      {
+        title: "Tire Replacement",
+        description: "Replaced front tires",
+        cost: 9000,
+        status: "CLOSED",
+        vehicleId: vehicles[2].id,
+        closedAt: new Date(),
+      },
+    ],
+  });
+
+  // Seed FuelLog records
+  await prisma.fuelLog.createMany({
+    data: [
+      {
+        liters: 40,
+        cost: 480,
+        vehicleId: vehicles[0].id,
+      },
+      {
+        liters: 30,
+        cost: 360,
+        vehicleId: vehicles[1].id,
+      },
+      {
+        liters: 120,
+        cost: 1440,
+        vehicleId: vehicles[4].id,
+      },
+    ],
+  });
+
+  console.log("✅ Database seeded with users, vehicles, drivers, trips, maintenance, and fuel logs.");
 }
 
 main()

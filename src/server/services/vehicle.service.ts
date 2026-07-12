@@ -72,3 +72,25 @@ export async function deleteVehicle(id: string) {
     },
   });
 }
+
+export async function vehicleCost(vehicleId: string) {
+  const fuel = await db.fuelLog.aggregate({
+    _sum: {
+      cost: true,
+    },
+    where: {
+      vehicleId,
+    },
+  });
+
+  const maintenance = await db.maintenance.aggregate({
+    _sum: {
+      cost: true,
+    },
+    where: {
+      vehicleId,
+    },
+  });
+
+  return (fuel._sum.cost ?? 0) + (maintenance._sum.cost ?? 0);
+}

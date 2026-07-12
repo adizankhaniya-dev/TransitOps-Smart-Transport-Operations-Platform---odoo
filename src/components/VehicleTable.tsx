@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { api } from "@/trpc/react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -41,6 +42,7 @@ import {
   TrashIcon,
   SearchIcon,
   SearchXIcon,
+  ExternalLinkIcon,
 } from "lucide-react";
 import { VehicleStatus } from "@/lib/enums";
 import { toast } from "sonner";
@@ -57,6 +59,7 @@ interface VehicleTableProps {
 }
 
 export default function VehicleTable({ onEdit }: VehicleTableProps = {}) {
+  const router = useRouter();
   const utils = api.useUtils();
   const { data: vehicles, isLoading } = api.vehicle.list.useQuery();
 
@@ -262,7 +265,14 @@ export default function VehicleTable({ onEdit }: VehicleTableProps = {}) {
                       <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md p-1.5 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-50 outline-none transition-colors">
                         <MoreVerticalIcon className="size-4" />
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-36">
+                      <DropdownMenuContent align="end" className="w-40">
+                        <DropdownMenuItem
+                          className="gap-2 cursor-pointer"
+                          onClick={() => router.push(`/vehicles/${vehicle.id}`)}
+                        >
+                          <ExternalLinkIcon className="size-3.5 text-zinc-500" />
+                          <span>View History</span>
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                           className="gap-2 cursor-pointer"
                           onClick={() => onEdit && onEdit(vehicle.id)}

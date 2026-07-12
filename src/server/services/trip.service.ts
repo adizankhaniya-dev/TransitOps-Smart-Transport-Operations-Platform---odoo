@@ -151,6 +151,15 @@ export async function completeTrip(id: string, data: CompleteTripInput) {
       data: { status: DriverStatus.AVAILABLE },
     });
 
+    await tx.fuelLog.create({
+      data: {
+        vehicleId: trip.vehicleId,
+        tripId: id,
+        liters: data.fuelUsed,
+        cost: data.fuelUsed * 1.5, // Standard rate to compute the required cost field
+      },
+    });
+
     return updatedTrip;
   });
 }
