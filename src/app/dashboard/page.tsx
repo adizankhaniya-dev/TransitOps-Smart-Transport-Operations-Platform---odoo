@@ -225,15 +225,17 @@ export default function DashboardPage() {
     allowedNav,
     approved,
     blocked,
+    refetch: refetchSession,
   } = useSession();
 
   const [boardName, setBoardName] = useState("TransitOps");
 
   // Load workspace / board name
   useEffect(() => {
-    const saved = localStorage.getItem("transitops_board_name");
-    if (saved) setBoardName(saved.replace(/^Workspace:\s*/i, ""));
-  }, []);
+    if (user?.boardName) {
+      setBoardName(user.boardName);
+    }
+  }, [user]);
 
   // Redirect if not logged in, not approved, or blocked
   useEffect(() => {
@@ -252,7 +254,7 @@ export default function DashboardPage() {
     }
   }, [sessionLoading, user, allowedNav]);
 
-  // ── Data ────────────────────────────────────────────────────────────────────
+ 
   const { data: vehicles, refetch: rfV } = api.vehicle.list.useQuery(
     undefined,
     { staleTime: 5000 },
@@ -342,7 +344,7 @@ export default function DashboardPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ── Mutations ───────────────────────────────────────────────────────────────
+
   const cMaint = api.maintenance.create.useMutation({
     onSuccess: () => {
       toast.success("Maintenance created");
@@ -377,6 +379,13 @@ export default function DashboardPage() {
       rfT();
       setIsExpenseOpen(false);
       setEF({ tripId: "", vehicleId: "", type: "TOLL", amount: "", description: "" });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const uWSName = api.team.updateWorkspaceName.useMutation({
+    onSuccess: () => {
+      toast.success("Workspace name updated");
+      refetchSession();
     },
     onError: (e) => toast.error(e.message),
   });
@@ -2113,10 +2122,9 @@ export default function DashboardPage() {
                             toast.error("Workspace name cannot be empty");
                             return;
                           }
-                          localStorage.setItem("transitops_board_name", cleanName);
-                          setBoardName(cleanName);
-                          toast.success("Workspace name updated");
+                          uWSName.mutate({ name: cleanName });
                         }}
+                        disabled={uWSName.isPending}
                         className="px-4 h-10 bg-[#0d5c3a] hover:bg-[#064e3b] rounded-xl text-xs font-bold text-white transition-all cursor-pointer whitespace-nowrap"
                       >
                         Save Name

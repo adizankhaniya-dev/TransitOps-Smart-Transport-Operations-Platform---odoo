@@ -162,4 +162,14 @@ export const teamRouter = createTRPCRouter({
         select: userSelect,
       });
     }),
+
+  updateWorkspaceName: protectedProcedure
+    .input(z.object({ name: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      const currentUser = await requireAdmin(ctx as Ctx);
+      return ctx.db.user.updateMany({
+        where: { boardId: currentUser.boardId },
+        data: { boardName: input.name },
+      });
+    }),
 });

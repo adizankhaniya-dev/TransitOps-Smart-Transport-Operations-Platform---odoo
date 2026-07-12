@@ -45,11 +45,13 @@ export async function POST(req: Request) {
     const hashedPassword = await hash(body.password, 10);
 
     let assignedBoardId = "default-board";
+    let assignedBoardName = "TransitOps Workspace";
     let isApproved = true;
 
     if (body.boardMode === "CREATE") {
-      // Generate a friendly uppercase board invite code: BOARD-XXXXXX
+      
       assignedBoardId = "BOARD-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+      assignedBoardName = body.boardName || "TransitOps Workspace";
       isApproved = true; // Board creator is auto-approved as Admin
     } else if (body.boardMode === "JOIN") {
       const targetId = body.boardId?.trim() || "";
@@ -66,6 +68,7 @@ export async function POST(req: Request) {
       }
 
       assignedBoardId = targetId;
+      assignedBoardName = boardExists.boardName || "TransitOps Workspace";
       isApproved = false; // Requires admin approval
     }
 
@@ -77,6 +80,7 @@ export async function POST(req: Request) {
         password: hashedPassword,
         role: (body.boardMode === "CREATE" ? "ADMIN" : body.role) as UserRole,
         boardId: assignedBoardId,
+        boardName: assignedBoardName,
         approved: isApproved,
         blocked: false,
       },

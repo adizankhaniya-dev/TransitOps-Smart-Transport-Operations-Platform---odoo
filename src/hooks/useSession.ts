@@ -9,6 +9,7 @@ export interface SessionUser {
   role: "ADMIN" | "FLEET_MANAGER" | "DISPATCHER" | "SAFETY_OFFICER" | "FINANCE";
   permission: "VIEW_ONLY" | "WRITE";
   boardId: string;
+  boardName: string | null;
 }
 
 interface SessionResponse {

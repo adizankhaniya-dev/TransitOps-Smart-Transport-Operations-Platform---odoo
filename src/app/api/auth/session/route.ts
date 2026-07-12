@@ -37,6 +37,7 @@ export async function GET() {
       role:       user.role,
       permission: user.permission,
       boardId:    user.boardId,
+      boardName:  user.boardName,
     },
   });
 }

@@ -15,6 +15,7 @@ model User {
   role       UserRole
   permission Permission @default(WRITE)
   boardId    String     @default("default-board")
+  boardName  String?    @default("TransitOps Workspace")
   approved   Boolean    @default(true)
   blocked    Boolean    @default(false)
   createdAt  DateTime   @default(now())
