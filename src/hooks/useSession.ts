@@ -41,8 +41,8 @@ export function useSession() {
   const [blocked,  setBlocked]  = useState<boolean>(false);
   const [loading,  setLoading]  = useState(true);
 
-  useEffect(() => {
-    fetch("/api/auth/session")
+  const fetchSession = () => {
+    return fetch("/api/auth/session")
       .then(r => r.json())
       .then((d: SessionResponse) => {
         if (d.isLoggedIn && d.user) {
@@ -51,18 +51,27 @@ export function useSession() {
           setBlocked(d.blocked ?? false);
         } else {
           setUser(null);
+          setApproved(true);
+          setBlocked(false);
         }
+        return d;
       })
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
+      .catch(() => {
+        setUser(null);
+        return null;
+      });
+  };
+
+  useEffect(() => {
+    fetchSession().finally(() => setLoading(false));
   }, []);
 
   const canWrite = (resource: string) => {
-    if (!user) return false;
+    if (!user || !approved || blocked) return false;
     return (ROLE_CAN_WRITE[user.role] ?? []).includes(resource);
   };
 
-  const allowedNav = user ? (ROLE_NAV[user.role] ?? []) : [];
+  const allowedNav = user && approved && !blocked ? (ROLE_NAV[user.role] ?? []) : [];
 
-  return { user, loading, canWrite, allowedNav, approved, blocked };
+  return { user, loading, canWrite, allowedNav, approved, blocked, refetch: fetchSession };
 }

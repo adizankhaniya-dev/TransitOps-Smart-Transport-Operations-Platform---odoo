@@ -23,6 +23,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
+    if (user.blocked) {
+      return NextResponse.json({ error: "Your access to this board has been blocked." }, { status: 403 });
+    }
+
     // Write session
     const session = await getSession();
     session.userId    = user.id;
@@ -34,7 +38,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       ok: true,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      approved: user.approved,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, boardId: user.boardId },
     });
   } catch (err) {
     console.error("[auth/login]", err);

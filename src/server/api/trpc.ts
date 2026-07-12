@@ -9,8 +9,8 @@ import { sessionOptions, SessionData } from "@/lib/session";
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   let session = await getServerSession(authOptions);
 
-  // If not authorized via next-auth, check iron-session
-  if (!session || !session.user) {
+  // If not authorized via next-auth or next-auth session is incomplete, check iron-session
+  if (!session || !session.user || !(session.user as any).id) {
     try {
       const ironSession = await getIronSession<SessionData>(await cookies(), sessionOptions);
       if (ironSession.isLoggedIn && ironSession.userId) {
@@ -37,13 +37,37 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
 
 const t = initTRPC.context<typeof createTRPCContext>().create();
 
-const isAuthed = t.middleware(({ next, ctx }) => {
+const isAuthed = t.middleware(async ({ next, ctx }) => {
   if (!ctx.session || !ctx.session.user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
+
+  const userId = (ctx.session.user as { id?: string }).id;
+  if (!userId) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  const user = await ctx.db.user.findUnique({
+    where: { id: userId },
+    select: { approved: true, blocked: true },
+  });
+
+  if (!user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  if (user.blocked) {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Your access has been blocked." });
+  }
+
+  if (!user.approved) {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Your membership is pending approval." });
+  }
+
   return next({
     ctx: {
       session: ctx.session,
+      db: ctx.db,
     },
   });
 });

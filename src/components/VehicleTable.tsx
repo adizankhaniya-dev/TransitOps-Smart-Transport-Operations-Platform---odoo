@@ -48,10 +48,10 @@ import { VehicleStatus } from "@/lib/enums";
 import { toast } from "sonner";
 
 const statusStyles = {
-  [VehicleStatus.AVAILABLE]: "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20",
-  [VehicleStatus.ON_TRIP]: "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20",
-  [VehicleStatus.IN_SHOP]: "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20",
-  [VehicleStatus.RETIRED]: "bg-zinc-50 text-zinc-700 border border-zinc-200 dark:bg-zinc-500/10 dark:text-zinc-400 dark:border-zinc-500/20",
+  [VehicleStatus.AVAILABLE]: "bg-[#eef6f2] text-[#0d5c3a] border border-emerald-100/50 hover:bg-emerald-100/50",
+  [VehicleStatus.ON_TRIP]: "bg-blue-50 text-blue-700 border border-blue-100/50 hover:bg-blue-100/50",
+  [VehicleStatus.IN_SHOP]: "bg-amber-50/50 text-amber-700 border border-amber-100/50 hover:bg-amber-100/50",
+  [VehicleStatus.RETIRED]: "bg-slate-50 text-slate-700 border border-slate-200/50 hover:bg-slate-100/50",
 };
 
 interface VehicleTableProps {
@@ -153,21 +153,21 @@ export default function VehicleTable({ onEdit }: VehicleTableProps = {}) {
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400" />
+          <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-[#9ca3af]" />
           <Input
             placeholder="Search by registration or name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-10 border-zinc-200 dark:border-zinc-800"
+            className="pl-10 h-10 bg-white border border-slate-200/80 rounded-xl focus:border-[#0d5c3a] focus:ring-1 focus:ring-[#0d5c3a] outline-none shadow-sm transition-all text-xs font-semibold"
           />
         </div>
         <Select value={typeFilter} onValueChange={(val) => setTypeFilter(val ?? "ALL")}>
-          <SelectTrigger className="w-full sm:w-44 h-10 border-zinc-200 dark:border-zinc-800">
+          <SelectTrigger className="w-full sm:w-44 !h-10 bg-white border border-slate-200/80 rounded-xl focus:border-[#0d5c3a] focus:ring-1 focus:ring-[#0d5c3a] text-xs font-semibold shadow-sm text-slate-700">
             <SelectValue placeholder="Type: All">
               {typeFilter === "ALL" ? "Type: All" : typeFilter}
             </SelectValue>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white border border-slate-200">
             <SelectItem value="ALL">Type: All</SelectItem>
             {uniqueTypes.map((type) => (
               <SelectItem key={type} value={type}>
@@ -177,12 +177,12 @@ export default function VehicleTable({ onEdit }: VehicleTableProps = {}) {
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val ?? "ALL")}>
-          <SelectTrigger className="w-full sm:w-44 h-10 border-zinc-200 dark:border-zinc-800">
+          <SelectTrigger className="w-full sm:w-44 !h-10 bg-white border border-slate-200/80 rounded-xl focus:border-[#0d5c3a] focus:ring-1 focus:ring-[#0d5c3a] text-xs font-semibold shadow-sm text-slate-700">
             <SelectValue placeholder="Status: All">
               {statusFilter === "ALL" ? "Status: All" : statusFilter.replace("_", " ")}
             </SelectValue>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white border border-slate-200">
             <SelectItem value="ALL">Status: All</SelectItem>
             {Object.values(VehicleStatus).map((status) => (
               <SelectItem key={status} value={status}>
@@ -195,37 +195,40 @@ export default function VehicleTable({ onEdit }: VehicleTableProps = {}) {
 
       {/* Table / Empty States */}
       {filteredVehicles.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg bg-zinc-50/20 dark:bg-zinc-950/20">
-          <SearchXIcon className="size-8 text-zinc-400 mb-3" />
-          <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">No vehicles found</h3>
-          <p className="text-sm text-zinc-500 mt-1">
+        <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl bg-slate-50/20 dark:bg-zinc-950/20">
+          <SearchXIcon className="size-8 text-slate-400 mb-3" />
+          <h3 className="font-extrabold text-sm text-slate-800" style={{ fontFamily: "var(--font-space-grotesk)" }}>No vehicles found</h3>
+          <p className="text-xs text-slate-500 mt-1">
             Try adjusting your search query or status filter.
           </p>
         </div>
       ) : (
-        <div className="rounded-lg border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+        <div className="overflow-hidden border border-slate-200/60 shadow-sm rounded-2xl bg-white animate-fadeup">
           <Table>
-            <TableHeader>
-              <TableRow className="bg-zinc-50/50 dark:bg-zinc-950/20">
-                <TableHead className="font-semibold text-zinc-700 dark:text-zinc-300 py-3 pl-4">
+            <TableHeader className="bg-[#fcfdfc] border-b border-slate-200/40">
+              <TableRow className="hover:bg-transparent border-b border-slate-200/40">
+                <TableHead className="font-extrabold text-slate-500 py-3 pl-5 text-[10px] uppercase tracking-wider">
                   Registration
                 </TableHead>
-                <TableHead className="font-semibold text-zinc-700 dark:text-zinc-300 py-3">
+                <TableHead className="font-extrabold text-slate-500 py-3 text-[10px] uppercase tracking-wider">
                   Vehicle
                 </TableHead>
-                <TableHead className="font-semibold text-zinc-700 dark:text-zinc-300 py-3">
+                <TableHead className="font-extrabold text-slate-500 py-3 text-[10px] uppercase tracking-wider">
                   Type
                 </TableHead>
-                <TableHead className="font-semibold text-zinc-700 dark:text-zinc-300 py-3">
+                <TableHead className="font-extrabold text-slate-500 py-3 text-[10px] uppercase tracking-wider">
                   Capacity
                 </TableHead>
-                <TableHead className="font-semibold text-zinc-700 dark:text-zinc-300 py-3">
+                <TableHead className="font-extrabold text-slate-500 py-3 text-[10px] uppercase tracking-wider">
                   Odometer
                 </TableHead>
-                <TableHead className="font-semibold text-zinc-700 dark:text-zinc-300 py-3">
+                <TableHead className="font-extrabold text-slate-500 py-3 text-[10px] uppercase tracking-wider">
+                  Acquisition Cost
+                </TableHead>
+                <TableHead className="font-extrabold text-slate-500 py-3 text-[10px] uppercase tracking-wider">
                   Status
                 </TableHead>
-                <TableHead className="font-semibold text-zinc-700 dark:text-zinc-300 py-3 pr-4 text-right">
+                <TableHead className="font-extrabold text-slate-500 py-3 pr-5 text-[10px] uppercase tracking-wider text-right">
                   Actions
                 </TableHead>
               </TableRow>
@@ -234,54 +237,50 @@ export default function VehicleTable({ onEdit }: VehicleTableProps = {}) {
               {filteredVehicles.map((vehicle) => (
                 <TableRow
                   key={vehicle.id}
-                  className="border-b border-zinc-100 dark:border-zinc-800 last:border-0 hover:bg-zinc-50/30 dark:hover:bg-zinc-800/10"
+                  className="border-b border-slate-100 last:border-0 hover:bg-[#fcfdfc] transition-all"
                 >
-                  <TableCell className="font-medium text-zinc-900 dark:text-zinc-100 py-3.5 pl-4">
+                  <TableCell className="font-bold text-slate-800 text-xs py-3.5 pl-5">
                     {vehicle.registrationNumber}
                   </TableCell>
-                  <TableCell className="text-zinc-600 dark:text-zinc-400 py-3.5">
+                  <TableCell className="font-semibold text-slate-700 text-xs py-3.5">
                     {vehicle.name}
                   </TableCell>
-                  <TableCell className="text-zinc-600 dark:text-zinc-400 py-3.5">
+                  <TableCell className="text-slate-500 text-xs py-3.5">
                     {vehicle.type}
                   </TableCell>
-                  <TableCell className="text-zinc-600 dark:text-zinc-400 py-3.5">
+                  <TableCell className="text-slate-600 text-xs font-semibold py-3.5">
                     {vehicle.maxLoadCapacity.toLocaleString()} kg
                   </TableCell>
-                  <TableCell className="text-zinc-600 dark:text-zinc-400 py-3.5">
+                  <TableCell className="text-slate-600 text-xs font-semibold py-3.5">
                     {vehicle.odometer.toLocaleString()} km
+                  </TableCell>
+                  <TableCell className="text-slate-600 text-xs font-semibold py-3.5">
+                    ₹{vehicle.acquisitionCost.toLocaleString()}
                   </TableCell>
                   <TableCell className="py-3.5">
                     <Badge
                       className={`${
                         statusStyles[vehicle.status as VehicleStatus]
-                      } px-2 py-0.5 rounded-full`}
+                      } px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-none border-0`}
                     >
                       {vehicle.status.replace("_", " ")}
                     </Badge>
                   </TableCell>
-                  <TableCell className="py-3.5 pr-4 text-right">
+                  <TableCell className="py-3.5 pr-5 text-right">
                     <DropdownMenu>
-                      <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md p-1.5 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-50 outline-none transition-colors">
+                      <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-lg p-1.5 text-slate-400 hover:bg-[#eef6f2] hover:text-[#0d5c3a] outline-none transition-all cursor-pointer border-0">
                         <MoreVerticalIcon className="size-4" />
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-40">
+                      <DropdownMenuContent align="end" className="w-40 bg-white border border-slate-200/80 rounded-xl shadow-lg p-1">
                         <DropdownMenuItem
-                          className="gap-2 cursor-pointer"
-                          onClick={() => router.push(`/vehicles/${vehicle.id}`)}
-                        >
-                          <ExternalLinkIcon className="size-3.5 text-zinc-500" />
-                          <span>View History</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="gap-2 cursor-pointer"
+                          className="gap-2 cursor-pointer text-xs font-semibold text-slate-600 focus:bg-slate-50 focus:text-slate-900 rounded-lg py-2"
                           onClick={() => onEdit && onEdit(vehicle.id)}
                         >
-                          <EditIcon className="size-3.5 text-zinc-500" />
+                          <EditIcon className="size-3.5 text-slate-400" />
                           <span>Edit details</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          className="gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer data-disabled:pointer-events-none data-disabled:opacity-50"
+                          className="gap-2 text-red-600 focus:bg-red-50 focus:text-red-700 cursor-pointer text-xs font-semibold rounded-lg py-2 data-disabled:pointer-events-none data-disabled:opacity-50"
                           disabled={vehicle.status === VehicleStatus.ON_TRIP}
                           onClick={() => setDeletingId(vehicle.id)}
                         >
@@ -303,22 +302,25 @@ export default function VehicleTable({ onEdit }: VehicleTableProps = {}) {
         open={!!deletingId}
         onOpenChange={(open) => !open && setDeletingId(null)}
       >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Vehicle</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this vehicle? This action cannot be
-              undone.
+        <DialogContent className="bg-white border border-slate-200 text-slate-900 rounded-2xl max-w-sm p-6">
+          <DialogHeader className="space-y-2">
+            <div className="size-10 rounded-full bg-red-50 border border-red-100 flex items-center justify-center text-red-600 mb-2">
+              <TrashIcon className="size-5" />
+            </div>
+            <DialogTitle className="text-base font-bold" style={{ fontFamily: "var(--font-space-grotesk)" }}>Delete Vehicle</DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              Are you sure you want to delete this vehicle? This action is permanent and cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setDeletingId(null)}>
+          <DialogFooter className="mt-4 gap-2 sm:justify-end">
+            <Button variant="outline" onClick={() => setDeletingId(null)} className="h-9 text-xs font-bold border-slate-200 rounded-xl hover:bg-slate-50 cursor-pointer">
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
+              className="h-9 text-xs font-bold rounded-xl cursor-pointer bg-red-600 hover:bg-red-700 text-white"
             >
               {deleteMutation.isPending ? "Deleting..." : "Delete"}
             </Button>

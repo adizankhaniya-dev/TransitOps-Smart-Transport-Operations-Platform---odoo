@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN "boardId" TEXT NOT NULL DEFAULT 'default-board';
+ALTER TABLE "User" ADD COLUMN "approved" BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE "User" ADD COLUMN "blocked" BOOLEAN NOT NULL DEFAULT false;

@@ -31,7 +31,13 @@ export default function SignupPage() {
   useEffect(() => {
     fetch("/api/auth/session")
       .then(r => r.json())
-      .then((d: { isLoggedIn?: boolean }) => { if (d.isLoggedIn) router.replace("/dashboard"); })
+      .then((d: { isLoggedIn?: boolean; approved?: boolean; blocked?: boolean }) => {
+        if (d.isLoggedIn) {
+          if (d.blocked) router.replace("/blocked");
+          else if (!d.approved) router.replace("/pending-approval");
+          else router.replace("/dashboard");
+        }
+      })
       .catch(() => {});
   }, [router]);
 
@@ -47,7 +53,7 @@ export default function SignupPage() {
         body: JSON.stringify({ name, email, password, role: boardMode === "CREATE" ? "ADMIN" : role, boardMode, boardName, boardId }),
       });
 
-      const data = await res.json() as { ok?: boolean; error?: string };
+      const data = await res.json() as { ok?: boolean; error?: string; user?: { approved?: boolean } };
 
       if (!res.ok || !data.ok) {
         setError(data.error || "An error occurred during signup");
@@ -55,10 +61,11 @@ export default function SignupPage() {
         // Save board information to LocalStorage
         if (boardMode === "CREATE") {
           localStorage.setItem("transitops_board_name", boardName || "TransitOps Workspace");
+          router.push("/dashboard");
         } else {
           localStorage.setItem("transitops_board_name", boardId ? `Workspace: ${boardId}` : "Joined Workspace");
+          router.push("/pending-approval");
         }
-        router.push("/dashboard");
       }
     } catch {
       setError("Network error. Please try again.");

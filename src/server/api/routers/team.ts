@@ -1,92 +1,151 @@
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import type { User } from "@prisma/client";
+import type { createTRPCContext } from "../trpc";
+
+type Ctx = Awaited<ReturnType<typeof createTRPCContext>> & { session: NonNullable<Awaited<ReturnType<typeof createTRPCContext>>["session"]> };
+
+const userSelect = {
+  id: true,
+  name: true,
+  email: true,
+  role: true,
+  boardId: true,
+  approved: true,
+  blocked: true,
+  createdAt: true,
+} as const;
+
+function getUserId(ctx: Ctx): string {
+  return (ctx.session.user as { id: string }).id;
+}
+
+async function requireAdmin(ctx: Ctx) {
+  const currentUser = await ctx.db.user.findUnique({
+    where: { id: getUserId(ctx) },
+  });
+
+  if (!currentUser || currentUser.role !== "ADMIN") {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Only board administrators can perform this action.",
+    });
+  }
+
+  return currentUser;
+}
+
+async function requireTargetOnBoard(ctx: Ctx, admin: User, targetId: string) {
+  if (targetId === admin.id) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "You cannot perform this action on yourself.",
+    });
+  }
+
+  const target = await ctx.db.user.findUnique({
+    where: { id: targetId },
+  });
+
+  if (!target || target.boardId !== admin.boardId) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "User not found on this board.",
+    });
+  }
+
+  if (target.role === "ADMIN") {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Cannot modify another administrator.",
+    });
+  }
+
+  return target;
+}
 
 export const teamRouter = createTRPCRouter({
-  
-  // List all users in the same board (Admins only)
   list: protectedProcedure.query(async ({ ctx }) => {
-    const currentUser = await ctx.db.user.findUnique({
-      where: { id: (ctx.session.user as any).id }
-    });
+    const currentUser = await requireAdmin(ctx as Ctx);
 
-    if (!currentUser || currentUser.role !== "ADMIN") {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Only board administrators can access team listings."
-      });
-    }
-
-    return ctx.db.user.findMany({
+    const members = await ctx.db.user.findMany({
       where: {
         boardId: currentUser.boardId,
-        // Exclude the current admin from control actions
-        id: { not: currentUser.id }
+        id: { not: currentUser.id },
       },
-      orderBy: { createdAt: "desc" }
+      select: userSelect,
+      orderBy: [{ approved: "asc" }, { createdAt: "desc" }],
     });
+
+    return {
+      boardId: currentUser.boardId,
+      members,
+      pendingCount: members.filter((m) => !m.approved).length,
+    };
   }),
 
-  // Approve a pending user request
   approve: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: (ctx.session.user as any).id }
-      });
+      const currentUser = await requireAdmin(ctx as Ctx);
+      const target = await requireTargetOnBoard(ctx as Ctx, currentUser, input.id);
 
-      if (!currentUser || currentUser.role !== "ADMIN") {
+      if (target.approved) {
         throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Only board administrators can approve membership requests."
+          code: "BAD_REQUEST",
+          message: "User is already approved.",
         });
       }
 
       return ctx.db.user.update({
         where: { id: input.id },
-        data: { approved: true }
+        data: { approved: true, blocked: false },
+        select: userSelect,
       });
     }),
 
-  // Toggle user block status
-  setBlockStatus: protectedProcedure
-    .input(z.object({ id: z.string(), blocked: z.boolean() }))
-    .mutation(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: (ctx.session.user as any).id }
-      });
-
-      if (!currentUser || currentUser.role !== "ADMIN") {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Only board administrators can block or unblock users."
-        });
-      }
-
-      return ctx.db.user.update({
-        where: { id: input.id },
-        data: { blocked: input.blocked }
-      });
-    }),
-
-  // Remove / delete a user
-  remove: protectedProcedure
+  reject: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: (ctx.session.user as any).id }
-      });
+      const currentUser = await requireAdmin(ctx as Ctx);
+      const target = await requireTargetOnBoard(ctx as Ctx, currentUser, input.id);
 
-      if (!currentUser || currentUser.role !== "ADMIN") {
+      if (target.approved) {
         throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Only board administrators can remove users."
+          code: "BAD_REQUEST",
+          message: "Cannot reject an approved member. Use remove instead.",
         });
       }
 
       return ctx.db.user.delete({
-        where: { id: input.id }
+        where: { id: input.id },
+        select: userSelect,
       });
-    })
+    }),
 
+  setBlockStatus: protectedProcedure
+    .input(z.object({ id: z.string(), blocked: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      const currentUser = await requireAdmin(ctx as Ctx);
+      await requireTargetOnBoard(ctx as Ctx, currentUser, input.id);
+
+      return ctx.db.user.update({
+        where: { id: input.id },
+        data: { blocked: input.blocked },
+        select: userSelect,
+      });
+    }),
+
+  remove: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const currentUser = await requireAdmin(ctx as Ctx);
+      await requireTargetOnBoard(ctx as Ctx, currentUser, input.id);
+
+      return ctx.db.user.delete({
+        where: { id: input.id },
+        select: userSelect,
+      });
+    }),
 });

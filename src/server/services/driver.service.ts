@@ -34,6 +34,13 @@ export async function createDriver(data: CreateDriverInput) {
 
 export async function getDrivers() {
   return db.driver.findMany({
+    include: {
+      trips: {
+        select: {
+          status: true
+        }
+      }
+    },
     orderBy: {
       createdAt: "desc",
     },

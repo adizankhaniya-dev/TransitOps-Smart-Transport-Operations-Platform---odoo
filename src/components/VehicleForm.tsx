@@ -114,28 +114,28 @@ export default function VehicleForm({ vehicleId, onSuccess }: VehicleFormProps =
   }
 
   return (
-    <Card className="w-full max-w-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 shadow-md">
-      <CardHeader>
-        <CardTitle className="text-xl font-bold">
+    <div className="w-full max-w-2xl space-y-5">
+      <div className="border-b border-slate-100 pb-3">
+        <h2 className="text-xl font-bold text-slate-800" style={{ fontFamily: "var(--font-space-grotesk)" }}>
           {isEditing ? "Edit Vehicle" : "Add New Vehicle"}
-        </CardTitle>
-        <CardDescription>
+        </h2>
+        <p className="text-xs text-slate-500 mt-1">
           {isEditing
             ? "Modify the vehicle parameters below."
             : "Fill in the details to register a new vehicle in the fleet."}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+        </p>
+      </div>
+      <div>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                 Registration Number
               </label>
               <Input
-                placeholder="e.g. TX-1234-AB"
+                placeholder="e.g. MH-12-PQ-5678"
                 {...register("registrationNumber")}
-                className="h-10 border-zinc-200 dark:border-zinc-800"
+                className="h-10 bg-white border border-slate-200/80 rounded-xl focus:border-[#0d5c3a] focus:ring-1 focus:ring-[#0d5c3a] text-xs font-semibold shadow-sm transition-all"
               />
               {errors.registrationNumber && (
                 <p className="text-xs text-destructive font-medium mt-0.5">
@@ -144,14 +144,14 @@ export default function VehicleForm({ vehicleId, onSuccess }: VehicleFormProps =
               )}
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                 Vehicle Name
               </label>
               <Input
-                placeholder="e.g. Volvo FH16"
+                placeholder="e.g. Tata Prima 5530.S"
                 {...register("name")}
-                className="h-10 border-zinc-200 dark:border-zinc-800"
+                className="h-10 bg-white border border-slate-200/80 rounded-xl focus:border-[#0d5c3a] focus:ring-1 focus:ring-[#0d5c3a] text-xs font-semibold shadow-sm transition-all"
               />
               {errors.name && (
                 <p className="text-xs text-destructive font-medium mt-0.5">
@@ -160,14 +160,14 @@ export default function VehicleForm({ vehicleId, onSuccess }: VehicleFormProps =
               )}
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                 Vehicle Type
               </label>
               <Input
-                placeholder="e.g. Semi-truck, Van"
+                placeholder="e.g. 10-Wheeler Truck, Dumper"
                 {...register("type")}
-                className="h-10 border-zinc-200 dark:border-zinc-800"
+                className="h-10 bg-white border border-slate-200/80 rounded-xl focus:border-[#0d5c3a] focus:ring-1 focus:ring-[#0d5c3a] text-xs font-semibold shadow-sm transition-all"
               />
               {errors.type && (
                 <p className="text-xs text-destructive font-medium mt-0.5">
@@ -176,8 +176,8 @@ export default function VehicleForm({ vehicleId, onSuccess }: VehicleFormProps =
               )}
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                 Maximum Load Capacity (kg)
               </label>
               <Input
@@ -185,7 +185,7 @@ export default function VehicleForm({ vehicleId, onSuccess }: VehicleFormProps =
                 step="any"
                 placeholder="e.g. 25000"
                 {...register("maxLoadCapacity")}
-                className="h-10 border-zinc-200 dark:border-zinc-800"
+                className="h-10 bg-white border border-slate-200/80 rounded-xl focus:border-[#0d5c3a] focus:ring-1 focus:ring-[#0d5c3a] text-xs font-semibold shadow-sm transition-all"
               />
               {errors.maxLoadCapacity && (
                 <p className="text-xs text-destructive font-medium mt-0.5">
@@ -194,8 +194,8 @@ export default function VehicleForm({ vehicleId, onSuccess }: VehicleFormProps =
               )}
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                 Odometer (km)
               </label>
               <Input
@@ -203,7 +203,7 @@ export default function VehicleForm({ vehicleId, onSuccess }: VehicleFormProps =
                 step="any"
                 placeholder="e.g. 15000"
                 {...register("odometer")}
-                className="h-10 border-zinc-200 dark:border-zinc-800"
+                className="h-10 bg-white border border-slate-200/80 rounded-xl focus:border-[#0d5c3a] focus:ring-1 focus:ring-[#0d5c3a] text-xs font-semibold shadow-sm transition-all"
               />
               {errors.odometer && (
                 <p className="text-xs text-destructive font-medium mt-0.5">
@@ -212,16 +212,16 @@ export default function VehicleForm({ vehicleId, onSuccess }: VehicleFormProps =
               )}
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                Acquisition Cost ($)
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                Acquisition Cost (₹)
               </label>
               <Input
                 type="number"
                 step="any"
-                placeholder="e.g. 85000"
+                placeholder="e.g. 3500000"
                 {...register("acquisitionCost")}
-                className="h-10 border-zinc-200 dark:border-zinc-800"
+                className="h-10 bg-white border border-slate-200/80 rounded-xl focus:border-[#0d5c3a] focus:ring-1 focus:ring-[#0d5c3a] text-xs font-semibold shadow-sm transition-all"
               />
               {errors.acquisitionCost && (
                 <p className="text-xs text-destructive font-medium mt-0.5">
@@ -230,8 +230,8 @@ export default function VehicleForm({ vehicleId, onSuccess }: VehicleFormProps =
               )}
             </div>
 
-            <div className="space-y-1 col-span-1 md:col-span-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <div className="space-y-1.5 col-span-1 md:col-span-2">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                 Status
               </label>
               <Controller
@@ -239,10 +239,10 @@ export default function VehicleForm({ vehicleId, onSuccess }: VehicleFormProps =
                 name="status"
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className="w-full h-10 border-zinc-200 dark:border-zinc-800">
+                    <SelectTrigger className="w-full !h-10 bg-white border border-slate-200/80 rounded-xl focus:border-[#0d5c3a] focus:ring-1 focus:ring-[#0d5c3a] text-xs font-semibold shadow-sm text-slate-700">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white border border-slate-200">
                       {Object.values(VehicleStatus).map((val) => (
                         <SelectItem key={val} value={val}>
                           {val.replace("_", " ")}
@@ -263,7 +263,7 @@ export default function VehicleForm({ vehicleId, onSuccess }: VehicleFormProps =
           <Button
             type="submit"
             disabled={isPending}
-            className="w-full h-10 bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200 font-semibold transition-all mt-4"
+            className="w-full h-10 rounded-xl bg-[#0d5c3a] hover:bg-[#064e3b] text-white text-xs font-bold transition-all hover-lift cursor-pointer shadow-sm border-0 mt-4"
           >
             {isPending
               ? isEditing
@@ -274,7 +274,7 @@ export default function VehicleForm({ vehicleId, onSuccess }: VehicleFormProps =
               : "Create Vehicle"}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

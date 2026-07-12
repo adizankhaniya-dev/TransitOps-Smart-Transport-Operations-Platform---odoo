@@ -27,7 +27,13 @@ export default function LoginPage() {
   useEffect(() => {
     fetch("/api/auth/session")
       .then(r => r.json())
-      .then((d: { isLoggedIn?: boolean }) => { if (d.isLoggedIn) router.replace("/dashboard"); })
+      .then((d: { isLoggedIn?: boolean; approved?: boolean; blocked?: boolean }) => {
+        if (d.isLoggedIn) {
+          if (d.blocked) router.replace("/blocked");
+          else if (!d.approved) router.replace("/pending-approval");
+          else router.replace("/dashboard");
+        }
+      })
       .catch(() => {});
 
     // Remember me check
@@ -57,7 +63,7 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      const data = await res.json() as { ok?: boolean; error?: string };
+      const data = await res.json() as { ok?: boolean; error?: string; approved?: boolean };
       if (!res.ok || !data.ok) {
         const n = attempts + 1;
         setAttempts(n);
@@ -65,11 +71,15 @@ export default function LoginPage() {
           setLocked(true);
           setError("Account locked after 5 failed attempts.");
         } else {
-          setError(`Invalid credentials. ${5 - n} attempt${5 - n === 1 ? "" : "s"} remaining.`);
+          setError(data.error || `Invalid credentials. ${5 - n} attempt${5 - n === 1 ? "" : "s"} remaining.`);
         }
       } else {
         toast.success("Successfully logged in!");
-        router.push("/dashboard");
+        if (data.approved === false) {
+          router.push("/pending-approval");
+        } else {
+          router.push("/dashboard");
+        }
       }
     } catch {
       setError("Network error. Please try again.");
