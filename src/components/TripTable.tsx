@@ -796,7 +796,9 @@ export default function TripTable() {
                   <DialogTitle className="text-base font-bold text-slate-900" style={{ fontFamily: "var(--font-space-grotesk)" }}>
                     Trip Details • {tripCode}
                   </DialogTitle>
-                  <StatusPill status={trip.status} />
+                  <span className={`${statusStyles[trip.status as TripStatus]} px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider`}>
+                    {trip.status === "DISPATCHED" ? "ON TRIP" : trip.status}
+                  </span>
                 </div>
                 <DialogDescription className="text-xs text-slate-500">
                   Detailed logs and metrics for this logistics run.

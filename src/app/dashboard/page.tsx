@@ -4,7 +4,6 @@ import { useState, useMemo, useEffect } from "react";
 import { useSession } from "@/hooks/useSession";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { ThemeToggle } from "@/components/theme-toggle";
 import VehicleTable from "@/components/VehicleTable";
 import VehicleForm from "@/components/VehicleForm";
 import DriverTable from "@/components/DriverTable";
@@ -235,7 +234,7 @@ export default function DashboardPage() {
   // Load workspace / board name
   useEffect(() => {
     const saved = localStorage.getItem("transitops_board_name");
-    if (saved) setBoardName(saved);
+    if (saved) setBoardName(saved.replace(/^Workspace:\s*/i, ""));
   }, []);
 
   // Redirect if not logged in, not approved, or blocked
@@ -574,7 +573,6 @@ export default function DashboardPage() {
     { id: "maintenance", label: "Maintenance", icon: WrenchIcon },
     { id: "fuel_expenses", label: "Fuel & Expenses", icon: FuelIcon },
     { id: "analytics", label: "Analytics", icon: BarChart3Icon },
-    { id: "settings", label: "Settings", icon: SettingsIcon },
   ];
   const navItems = ALL_NAV.filter((n) => !user || allowedNav.includes(n.id));
   const userInitials =
@@ -598,9 +596,9 @@ export default function DashboardPage() {
             <span
               className="font-extrabold text-base tracking-tight text-slate-900 truncate max-w-[150px]"
               style={{ fontFamily: "var(--font-space-grotesk)" }}
-              title={boardName}
+              title={boardName.replace(/^Workspace:\s*/i, "")}
             >
-              {boardName}
+              {boardName.replace(/^Workspace:\s*/i, "")}
             </span>
           </div>
 
@@ -835,9 +833,6 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* Theme toggle */}
-            <ThemeToggle />
-
             {/* Profile widget */}
             <div className="flex items-center gap-3 pl-2 border-l border-slate-200">
               <div className="size-9 rounded-full bg-[#e8f5e9] text-[#0d5c3a] flex items-center justify-center font-bold text-[12px] border border-emerald-100">
@@ -851,6 +846,14 @@ export default function DashboardPage() {
                   {user?.email ?? "tmichael20@gmail.com"}
                 </p>
               </div>
+              {/* Exit button */}
+              <button
+                onClick={handleLogout}
+                title="Logout"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer border-0 bg-transparent flex items-center justify-center ml-1"
+              >
+                <LogOutIcon className="size-4" />
+              </button>
             </div>
           </div>
         </header>
@@ -2095,7 +2098,41 @@ export default function DashboardPage() {
                 </p>
               </div>
               {user?.role === "ADMIN" ? (
-                <TeamManagement />
+                <div className="space-y-6">
+                  {/* Workspace Name Edit Card */}
+                  <div className={`${cardBg} p-6 space-y-4`}>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900" style={{ fontFamily: "var(--font-space-grotesk)" }}>Workspace Name</h3>
+                      <p className="text-xs text-slate-500 mt-0.5">Rename this operations workspace.</p>
+                    </div>
+                    <div className="flex gap-3 max-w-md">
+                      <input
+                        value={boardName}
+                        onChange={(e) => setBoardName(e.target.value.replace(/^Workspace:\s*/i, ""))}
+                        placeholder="e.g. TransitOps"
+                        className={`${inputCl} !h-10`}
+                      />
+                      <button
+                        onClick={() => {
+                          const cleanName = boardName.replace(/^Workspace:\s*/i, "").trim();
+                          if (!cleanName) {
+                            toast.error("Workspace name cannot be empty");
+                            return;
+                          }
+                          localStorage.setItem("transitops_board_name", cleanName);
+                          setBoardName(cleanName);
+                          toast.success("Workspace name updated");
+                        }}
+                        className="px-4 h-10 bg-[#0d5c3a] hover:bg-[#064e3b] rounded-xl text-xs font-bold text-white transition-all cursor-pointer whitespace-nowrap"
+                      >
+                        Save Name
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Team management */}
+                  <TeamManagement />
+                </div>
               ) : (
                 <div className={`${cardBg} p-6`}>
                   <p className="text-xs text-slate-500">
